@@ -3,6 +3,8 @@ import { Link } from "react-router-dom";
 
 const AboutHero = () => {
   return (
+    <>
+    <div className="h-24 md:h-32 bg-[#f6f5f3]"></div>
     <section className="relative w-full h-[500px] overflow-hidden bg-[#f6f5f3] md:h-auto md:min-h-[360px]">
       <div
         className="absolute inset-0 z-0"
@@ -45,6 +47,7 @@ const AboutHero = () => {
         </div>
       </div>
     </section>
+    </>
   );
 };
 

@@ -36,9 +36,10 @@ const ClientSuccessPage = () => {
   return (
     <div className="min-h-screen bg-white">
       <Header />
+      <div className="h-24 md:h-32 bg-[#292929]"></div>
       
       {/* Hero Section */}
-      <section className="pt-64 pb-20 bg-[#292929] text-white">
+      <section className="pt-20 pb-20 bg-[#292929] text-white">
         <div className="container mx-auto px-6 md:px-12 text-center">
           <h1 className="text-4xl md:text-6xl font-bold font-serif mb-6">
             Client <span className="text-[#ff7301]">Success</span>

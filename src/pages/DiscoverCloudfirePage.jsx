@@ -29,9 +29,10 @@ const DiscoverCloudfirePage = () => {
   return (
     <div className="min-h-screen bg-white">
       <Header />
+      <div className="h-24 md:h-32 bg-[#292929]"></div>
       
       {/* Hero Section */}
-      <section className="pt-64 pb-20 bg-gradient-to-br from-[#292929] to-black text-white relative overflow-hidden">
+      <section className="pt-20 pb-20 bg-gradient-to-br from-[#292929] to-black text-white relative overflow-hidden">
         <div className="absolute top-0 left-0 w-full h-full overflow-hidden opacity-10">
           <div className="absolute -top-[20%] -right-[10%] w-[50%] h-[100%] rounded-full bg-[#ff7301] blur-[150px]"></div>
           <div className="absolute top-[60%] -left-[10%] w-[40%] h-[80%] rounded-full bg-blue-600 blur-[120px]"></div>
