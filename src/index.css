@@ -1,0 +1,48 @@
+@import "tailwindcss";
+
+@theme {
+  --color-primary: #ff7301;
+  --color-secondary: #101010;
+  --font-serif: Georgia, serif;
+  --font-sans: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
+  
+  --shadow-custom: 0 10px 40px rgba(0,0,0,0.1);
+  --radius-custom: 2.5rem;
+}
+
+
+@layer base {
+  body {
+    @apply font-sans antialiased text-[#1f1f1f] bg-white m-0;
+  }
+
+  h1, h2, h3, h4 {
+    @apply font-serif font-bold text-secondary;
+  }
+}
+
+@layer utilities {
+  @supports (color:color-mix(in lab, red, red)) {
+    .bg-white\/60 {
+      background-color: color-mix(in oklab, #f2f2f2 60%, transparent);
+    }
+  }
+
+  .animate-ticker {
+    animation: ticker linear infinite;
+  }
+
+  .pause-hover:hover {
+    animation-play-state: paused;
+  }
+
+  .ticker-mask {
+    mask-image: linear-gradient(to right, transparent, black 10%, black 90%, transparent);
+  }
+}
+
+@keyframes ticker {
+  0% { transform: translateX(0); }
+  100% { transform: translateX(-50%); }
+}
+
