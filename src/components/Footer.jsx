@@ -1,7 +1,35 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { Link } from 'react-router-dom';
 
 const Footer = () => {
+  const [result, setResult] = useState("");
+  const [loading, setLoading] = useState(false);
+
+  const onSubmit = async (event) => {
+    event.preventDefault();
+    setLoading(true);
+    setResult("Sending...");
+    const formData = new FormData(event.target);
+
+    formData.append("access_key", "f5e9b95b-ceb0-42ce-a6ce-b9511c7f96e6");
+
+    const response = await fetch("https://api.web3forms.com/submit", {
+      method: "POST",
+      body: formData
+    });
+
+    const data = await response.json();
+
+    if (data.success) {
+      setResult("Form Submitted Successfully");
+      event.target.reset();
+    } else {
+      console.log("Error", data);
+      setResult(data.message);
+    }
+    setLoading(false);
+  };
+
   return (
     <footer className="w-full bg-[#f8f8f8] pt-16 lg:pt-24 pb-10 px-6 lg:px-[80px]">
       <div className="max-w-[1440px] mx-auto">
@@ -45,8 +73,7 @@ const Footer = () => {
                 { name: 'Instagram', icon: 'rect width="20" height="20" x="2" y="2" rx="5" ry="5"/><path d="M16 11.37A4 4 0 1 1 12.63 8 4 4 0 0 1 16 11.37z"/><line x1="17.5" x2="17.51" y1="6.5" y2="6.5"/' },
                 { name: 'Youtube', icon: 'path d="M22.54 6.42a2.78 2.78 0 0 0-1.94-2C18.88 4 12 4 12 4s-6.88 0-8.6.42a2.78 2.78 0 0 0-1.94 2C1 8.11 1 12 1 12s0 3.89.46 5.58a2.78 2.78 0 0 0 1.94 2c1.72.42 8.6.42 8.6.42s6.88 0 8.6-.42a2.78 2.78 0 0 0 1.94-2C23 15.89 23 12 23 12s0-3.89-.46-5.58z"/><polygon points="9.75 15.02 15.5 12 9.75 8.98 9.75 15.02"/' },
                 { name: 'linkedin', icon: 'path d="M16 8a6 6 0 0 1 6 6v7h-4v-7a2 2 0 0 0-2-2 2 2 0 0 0-2 2v7h-4v-7a6 6 0 0 1 6-6z"/><rect width="4" height="12" x="2" y="9"/><circle cx="4" cy="4" r="2"/' },
-                { name: 'Twitter', icon: 'path d="M4 4l11.733 16h4.267l-11.733 -16z M4 20l6.768 -6.768 M13.232 10.768l6.768 -6.768"/' },
-                { name: 'Dashboard', icon: 'M3 13h8V3H3v10zm0 8h8v-6H3v6zm10 0h8V11h-8v10zm0-18v6h8V3h-8z', path: '/dashboard' }
+                { name: 'Twitter', icon: 'path d="M4 4l11.733 16h4.267l-11.733 -16z M4 20l6.768 -6.768 M13.232 10.768l6.768 -6.768"/' }
               ].map((item) => {
                 const Content = (
                   <li key={item.name} className="flex items-center gap-4 group cursor-pointer transition-all hover:translate-x-1">
@@ -101,31 +128,44 @@ const Footer = () => {
           {/* Column 4: Get In Touch */}
           <div className="col-span-2 md:col-span-1">
             <h3 className="text-[#141414] font-serif font-bold text-[22px] mb-8">Get In Touch</h3>
-            <form className="flex flex-col gap-4">
+            <form onSubmit={onSubmit} className="flex flex-col gap-4">
               <input 
                 type="text" 
+                name="name"
+                required
                 placeholder="Name" 
                 className="w-full h-[48px] px-5 bg-white border border-[#eee] rounded-[10px] text-[15px] focus:outline-none focus:border-[#ff7e06] transition-all"
               />
               <input 
                 type="email" 
+                name="email"
+                required
                 placeholder="email@gmail.com" 
                 className="w-full h-[48px] px-5 bg-white border border-[#eee] rounded-[10px] text-[15px] focus:outline-none focus:border-[#ff7e06] transition-all"
               />
               <input 
                 type="tel" 
+                name="phone"
                 placeholder="+0 123 456 789" 
                 className="w-full h-[48px] px-5 bg-white border border-[#eee] rounded-[10px] text-[15px] focus:outline-none focus:border-[#ff7e06] transition-all"
               />
               <button 
                 type="submit" 
-                className="w-full h-[52px] mt-2 bg-black text-white rounded-[10px] flex items-center justify-center gap-3 font-semibold text-[16px] hover:bg-[#1a1a1a] transition-all shadow-lg"
+                disabled={loading}
+                className="w-full h-[52px] mt-2 bg-black text-white rounded-[10px] flex items-center justify-center gap-3 font-semibold text-[16px] hover:bg-[#1a1a1a] transition-all shadow-lg disabled:opacity-70"
               >
-                Submit Now
-                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-                  <path d="M5 12H19M19 12L12 5M19 12L12 19" stroke="white" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
-                </svg>
+                {loading ? "Sending..." : "Submit Now"}
+                {!loading && (
+                  <svg width="18" height="18" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                    <path d="M5 12H19M19 12L12 5M19 12L12 19" stroke="white" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+                  </svg>
+                )}
               </button>
+              {result && (
+                <p className={`text-sm text-center mt-2 ${result.includes("Successfully") ? "text-green-600" : "text-red-500"}`}>
+                  {result}
+                </p>
+              )}
             </form>
           </div>
         </div>
