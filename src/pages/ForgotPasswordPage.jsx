@@ -22,9 +22,6 @@ const ForgotPasswordPage = () => {
       const data = await response.json();
 
       if (response.ok) {
-        if (data.debug_otp) {
-          alert(`Debug Code: ${data.debug_otp}`);
-        }
         navigate("/reset-password", { state: { email } });
       } else {
         setStatus({

@@ -31,32 +31,37 @@ const SignupPage = () => {
 
     try {
       const API = import.meta.env.VITE_API_URL || "http://localhost:8000";
+      const payload = {
+        ...formData,
+        full_name: formData.full_name.trim(),
+        email: formData.email.trim().toLowerCase(),
+        mobile: formData.mobile.trim(),
+        work_status: formData.work_status.trim(),
+      };
       const response = await fetch(`${API}/signup`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
         },
-        body: JSON.stringify(formData),
+        body: JSON.stringify(payload),
       });
 
       const data = await response.json();
 
       if (response.ok) {
-        if (data.debug_otp) {
-          alert(
-            `Email service failed, but here is your code for testing: ${data.debug_otp}`,
-          );
-        }
         navigate("/verify-otp", {
           state: {
-            email: formData.email,
+            email: payload.email,
             pending_token: data.pending_token,
           },
         });
       } else {
+        const message = Array.isArray(data.detail)
+          ? data.detail.map((item) => item.msg).join(", ")
+          : data.detail || data.message || "Something went wrong";
         setStatus({
           type: "error",
-          message: data.detail || "Something went wrong",
+          message,
         });
       }
     } catch (err) {

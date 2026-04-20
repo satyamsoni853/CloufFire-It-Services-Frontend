@@ -80,7 +80,7 @@ const VerifyOtpPage = () => {
       style={{ backgroundImage: 'url("/login/background.jpg")' }}
     >
       {/* Overlay for readability */}
-      <div className="absolute inset-0 bg-black/40 backdrop-blur-[2px]"></div>
+      <div className="absolute "></div>
       <Link
         to="/"
         className="relative z-10 mb-8 transition-transform hover:scale-105 font-sans"
