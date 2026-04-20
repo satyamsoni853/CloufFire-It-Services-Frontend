@@ -8,7 +8,9 @@ const API = import.meta.env.VITE_API_URL || 'http://localhost:8000';
 const AdminDashboard = () => {
   const [stats, setStats] = useState(null);
   const [users, setUsers] = useState([]);
+  const [jobs, setJobs] = useState([]);
   const [loading, setLoading] = useState(true);
+
 
   useEffect(() => {
     const token = localStorage.getItem('token');
@@ -17,9 +19,11 @@ const AdminDashboard = () => {
     Promise.all([
       fetch(`${API}/dashboard/stats`, { headers: { Authorization: `Bearer ${token}` } }).then(r => r.ok ? r.json() : null),
       fetch(`${API}/admin/all-users`, { headers: { Authorization: `Bearer ${token}` } }).then(r => r.ok ? r.json() : []),
-    ]).then(([s, u]) => { 
+      fetch(`${API}/jobs`, { headers: { Authorization: `Bearer ${token}` } }).then(r => r.ok ? r.json() : []),
+    ]).then(([s, u, j]) => { 
       setStats(s); 
       setUsers(u); 
+      setJobs(j);
       setLoading(false); 
     }).catch(() => setLoading(false));
   }, []);
@@ -196,7 +200,57 @@ const AdminDashboard = () => {
       <div className="space-y-8">
         <UserTable title="Job Seekers" data={jobseekers} type="job seeker" />
         <UserTable title="Employers" data={employers} type="employer" />
+        
+        <div className="mb-10">
+          <div className="flex justify-between items-center mb-6">
+            <div>
+              <h3 className="text-xl font-bold text-gray-900 font-serif">Active Job Postings</h3>
+              <p className="text-gray-400 text-sm mt-1">{jobs.length} jobs currently listed</p>
+            </div>
+          </div>
+          <div className="bg-white rounded-3xl border border-gray-100 shadow-sm overflow-hidden overflow-x-auto">
+            <table className="w-full text-left border-collapse min-w-[600px]">
+              <thead className="bg-gray-50/50 border-b border-gray-100">
+                <tr>
+                  <th className="px-6 py-4 text-xs font-bold text-gray-400 uppercase tracking-widest">Job Details</th>
+                  <th className="px-6 py-4 text-xs font-bold text-gray-400 uppercase tracking-widest">Company</th>
+                  <th className="px-6 py-4 text-xs font-bold text-gray-400 uppercase tracking-widest">Salary</th>
+                  <th className="px-6 py-4 text-xs font-bold text-gray-400 uppercase tracking-widest text-right">Actions</th>
+                </tr>
+              </thead>
+              <tbody className="divide-y divide-gray-50">
+                {jobs.map((job) => (
+                  <tr key={job.id} className="hover:bg-gray-50/50 transition-colors">
+                    <td className="px-6 py-4">
+                      <div>
+                        <div className="font-bold text-gray-900">{job.title}</div>
+                        <div className="text-xs text-gray-400 font-medium">{job.location} • {job.type}</div>
+                      </div>
+                    </td>
+                    <td className="px-6 py-4">
+                      <div className="text-sm font-bold text-gray-700">{job.company}</div>
+                    </td>
+                    <td className="px-6 py-4">
+                      <div className="text-sm font-bold text-[#ff7301]">{job.salary}</div>
+                    </td>
+                    <td className="px-6 py-4 text-right">
+                      <button className="text-xs font-bold uppercase tracking-widest px-3 py-1.5 rounded-lg border border-red-100 text-red-500 hover:bg-red-50 transition-colors">
+                        Remove
+                      </button>
+                    </td>
+                  </tr>
+                ))}
+                {jobs.length === 0 && (
+                  <tr>
+                    <td colSpan="4" className="px-6 py-8 text-center text-gray-400 italic">No jobs posted yet.</td>
+                  </tr>
+                )}
+              </tbody>
+            </table>
+          </div>
+        </div>
       </div>
+
     </DashboardLayout>
   );
 };
