@@ -6,52 +6,57 @@ const DashboardLayout = ({ children }) => {
   const [isUserMenuOpen, setIsUserMenuOpen] = useState(false);
   const [isNotifyOpen, setIsNotifyOpen] = useState(false);
   const [userData, setUserData] = useState(null);
-  const location = useLocation();
-
+  const [notifications, setNotifications] = useState([]);
   const [menuItems, setMenuItems] = useState([
     { label: 'Overview', path: '/dashboard', icon: 'M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6' },
     { label: 'Jobs', path: '/dashboard/jobs', icon: 'M21 13.255A23.931 23.931 0 0112 15c-3.183 0-6.22-.62-9-1.745M16 6V4a2 2 0 00-2-2h-4a2 2 0 00-2 2v2m4 6h.01M5 20h14a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z' },
     { label: 'My Profile', path: '/dashboard/profile', icon: 'M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z' },
   ]);
+  const location = useLocation();
 
   useEffect(() => {
-    const fetchUserData = async () => {
+    const fetchDashboardData = async () => {
+      const token = localStorage.getItem('token');
+      if (!token) return;
+      
+      const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:8000';
+      
       try {
-        const response = await fetch(`${import.meta.env.VITE_API_URL || 'http://localhost:8000'}/profile`, {
-          headers: {
-            'Authorization': `Bearer ${localStorage.getItem('token')}`,
-          },
-        });
-        if (response.ok) {
-          const data = await response.json();
-          setUserData(data);
+        const [profileRes, notifyRes] = await Promise.all([
+          fetch(`${API_URL}/profile`, { headers: { 'Authorization': `Bearer ${token}` } }),
+          fetch(`${API_URL}/notifications`, { headers: { 'Authorization': `Bearer ${token}` } })
+        ]);
+
+        if (profileRes.ok) {
+          const userData = await profileRes.json();
+          setUserData(userData);
           
-          // Dynamically update menu items based on role from server
-          const currentRole = data.role;
           const items = [
             { label: 'Overview', path: '/dashboard', icon: 'M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6' },
             { label: 'Jobs', path: '/dashboard/jobs', icon: 'M21 13.255A23.931 23.931 0 0112 15c-3.183 0-6.22-.62-9-1.745M16 6V4a2 2 0 00-2-2h-4a2 2 0 00-2 2v2m4 6h.01M5 20h14a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z' },
             { label: 'My Profile', path: '/dashboard/profile', icon: 'M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z' },
           ];
           
-          if (currentRole === 'employer' || currentRole === 'admin') {
+          if (userData.role === 'employer' || userData.role === 'admin') {
             items.push({ label: 'Job Seekers', path: '/dashboard/jobseekers', icon: 'M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z' });
           }
           
           items.push({ label: 'Reports', path: '/dashboard/reports', icon: 'M9 17v-2m3 2v-4m3 4v-6m2 10H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z' });
           setMenuItems(items);
           
-          // Sync localStorage if missing
-          if (!localStorage.getItem('role')) {
-            localStorage.setItem('role', currentRole);
-          }
+          if (!localStorage.getItem('role')) localStorage.setItem('role', userData.role);
+        }
+
+        if (notifyRes.ok) {
+          const notificationsData = await notifyRes.ok ? await notifyRes.json() : [];
+          setNotifications(notificationsData);
         }
       } catch (err) {
-        console.error("Failed to fetch user data", err);
+        console.error("Failed to fetch dashboard data", err);
       }
     };
-    fetchUserData();
-  }, []);
+    fetchDashboardData();
+  }, [location.pathname]);
 
   const handleLogout = () => {
     localStorage.removeItem('token');
@@ -154,21 +159,36 @@ const DashboardLayout = ({ children }) => {
                 <svg className="w-6 h-6 sm:w-7 sm:h-7 text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9" />
                 </svg>
-                <span className="absolute top-1 right-1 bg-[#ff7301] text-white text-[10px] rounded-full w-4 h-4 flex items-center justify-center font-bold">2</span>
+                {notifications.length > 0 && (
+                  <span className="absolute top-1 right-1 bg-[#ff7301] text-white text-[10px] rounded-full w-4 h-4 flex items-center justify-center font-bold">
+                    {notifications.length}
+                  </span>
+                )}
               </button>
 
               {isNotifyOpen && (
                 <div className="absolute right-0 mt-3 w-72 bg-white rounded-2xl shadow-2xl border border-gray-100 py-4 z-[100]">
-                  <h4 className="px-6 pb-2 border-b border-gray-50 text-sm font-bold text-gray-900">Notifications</h4>
-                  <div className="py-2">
-                    <div className="px-6 py-3 hover:bg-gray-50 cursor-pointer transition-colors">
-                      <p className="text-xs font-bold text-gray-800">New job match found!</p>
-                      <p className="text-[10px] text-gray-400 mt-1">2 hours ago</p>
-                    </div>
-                    <div className="px-6 py-3 hover:bg-gray-50 cursor-pointer transition-colors border-t border-gray-50">
-                      <p className="text-xs font-bold text-gray-800">Welcome to CloudFire!</p>
-                      <p className="text-[10px] text-gray-400 mt-1">Yesterday</p>
-                    </div>
+                  <div className="flex justify-between items-center px-6 pb-2 border-b border-gray-50">
+                    <h4 className="text-sm font-bold text-gray-900">Notifications</h4>
+                    <span className="text-[10px] text-[#ff7301] font-bold uppercase tracking-wider">{userData?.role}</span>
+                  </div>
+                  <div className="py-2 max-h-[300px] overflow-y-auto">
+                    {notifications.map((notif) => (
+                      <div key={notif.id} className="px-6 py-3 hover:bg-gray-50 cursor-pointer transition-colors border-b border-gray-50 last:border-0 group">
+                        <div className="flex items-start gap-3">
+                          <span className="text-lg">{notif.icon}</span>
+                          <div>
+                            <p className="text-xs font-bold text-gray-800 group-hover:text-[#ff7301] transition-colors">{notif.title}</p>
+                            <p className="text-[10px] text-gray-400 mt-1">{notif.time}</p>
+                          </div>
+                        </div>
+                      </div>
+                    ))}
+                    {notifications.length === 0 && (
+                      <div className="px-6 py-8 text-center text-gray-400 text-xs italic">
+                        No new notifications
+                      </div>
+                    )}
                   </div>
                 </div>
               )}

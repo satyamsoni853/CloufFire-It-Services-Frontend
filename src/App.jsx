@@ -23,6 +23,11 @@ import AdminDashboard from './pages/AdminDashboard';
 import JobSeekerDirectory from './pages/JobSeekerDirectory';
 import ClientSuccessPage from './pages/ClientSuccessPage';
 import DiscoverCloudfirePage from './pages/DiscoverCloudfirePage';
+import LegalPrivacy from './pages/LegalPrivacy';
+import LegalTerms from './pages/LegalTerms';
+
+
+
 
 const DashboardRouter = () => {
   const role = localStorage.getItem('role');
@@ -70,6 +75,10 @@ function AppContent() {
         <Route path="/expertise" element={<ExpertisePage />} />
         <Route path="/client-success" element={<ClientSuccessPage />} />
         <Route path="/discover" element={<DiscoverCloudfirePage />} />
+        <Route path="/privacy-policy" element={<LegalPrivacy />} />
+        <Route path="/terms-and-conditions" element={<LegalTerms />} />
+
+
         <Route path="/team/:slug" element={<TeamMemberPage />} />
         <Route path="/dashboard" element={<DashboardRouter />} />
         <Route path="/dashboard/jobs" element={<JobsPage />} />

@@ -178,8 +178,8 @@ const Footer = () => {
           <div className="flex flex-wrap justify-center gap-6 font-sans text-[14px] text-gray-600">
             <span className="hover:text-[#ff7e06] cursor-pointer transition-colors">Contact Us</span>
             <span className="hover:text-[#ff7e06] cursor-pointer transition-colors">Request a Demo</span>
-            <span className="hover:text-[#ff7e06] cursor-pointer transition-colors">Privacy Policy</span>
-            <span className="hover:text-[#ff7e06] cursor-pointer transition-colors">Terms of Service</span>
+            <Link to="/privacy-policy" className="hover:text-[#ff7e06] cursor-pointer transition-colors">Privacy Policy</Link>
+            <Link to="/terms-and-conditions" className="hover:text-[#ff7e06] cursor-pointer transition-colors">Terms of Service</Link>
           </div>
         </div>
       </div>
