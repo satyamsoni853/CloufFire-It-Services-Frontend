@@ -1,6 +1,8 @@
 import React, { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { motion } from "framer-motion";
+import { apiRequest } from "../utils/api";
+import toast from "react-hot-toast";
 
 const SignupPage = () => {
   const navigate = useNavigate();
@@ -12,7 +14,6 @@ const SignupPage = () => {
     work_status: "Fresher",
     role: "jobseeker",
   });
-  const [status, setStatus] = useState({ type: "", message: "" });
   const [loading, setLoading] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
 
@@ -27,10 +28,8 @@ const SignupPage = () => {
   const handleSubmit = async (e) => {
     e.preventDefault();
     setLoading(true);
-    setStatus({ type: "", message: "" });
 
     try {
-      const API = import.meta.env.VITE_API_URL || "http://localhost:8000";
       const payload = {
         ...formData,
         full_name: formData.full_name.trim(),
@@ -38,37 +37,20 @@ const SignupPage = () => {
         mobile: formData.mobile.trim(),
         work_status: formData.work_status.trim(),
       };
-      const response = await fetch(`${API}/signup`, {
+      const data = await apiRequest("/signup", {
         method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
         body: JSON.stringify(payload),
       });
 
-      const data = await response.json();
-
-      if (response.ok) {
-        navigate("/verify-otp", {
-          state: {
-            email: payload.email,
-            pending_token: data.pending_token,
-          },
-        });
-      } else {
-        const message = Array.isArray(data.detail)
-          ? data.detail.map((item) => item.msg).join(", ")
-          : data.detail || data.message || "Something went wrong";
-        setStatus({
-          type: "error",
-          message,
-        });
-      }
-    } catch (err) {
-      setStatus({
-        type: "error",
-        message: "Connection error. Is the backend running?",
+      toast.success(data.message || "OTP sent to your email.");
+      navigate("/verify-otp", {
+        state: {
+          email: payload.email,
+          pending_token: data.pending_token,
+        },
       });
+    } catch (err) {
+      console.error("Signup failed", err);
     } finally {
       setLoading(false);
     }
@@ -107,20 +89,6 @@ const SignupPage = () => {
             Create your profile and land your dream job
           </p>
         </div>
-
-        {status.message && (
-          <motion.div
-            initial={{ opacity: 0, scale: 0.95 }}
-            animate={{ opacity: 1, scale: 1 }}
-            className={`mb-8 p-4 rounded-2xl text-sm font-medium border text-center ${
-              status.type === "error"
-                ? "bg-red-50 border-red-100 text-red-600"
-                : "bg-green-50 border-green-100 text-green-600"
-            }`}
-          >
-            {status.message}
-          </motion.div>
-        )}
 
         <form onSubmit={handleSubmit} className="space-y-6">
           <div className="space-y-3">

@@ -1,6 +1,7 @@
 import React, { useState } from "react";
 import { Link, useNavigate, useLocation } from "react-router-dom";
 import { motion } from "framer-motion";
+import { apiRequest } from "../utils/api";
 
 const LoginPage = () => {
   const [formData, setFormData] = useState({
@@ -24,26 +25,17 @@ const LoginPage = () => {
     setError("");
 
     try {
-      const API = import.meta.env.VITE_API_URL || "http://localhost:8000";
-      const response = await fetch(`${API}/login`, {
+      const data = await apiRequest("/login", {
         method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
         body: JSON.stringify(formData),
       });
 
-      const data = await response.json();
-
-      if (response.ok) {
-        localStorage.setItem("token", data.access_token);
-        localStorage.setItem("role", data.role);
-        navigate("/dashboard");
-      } else {
-        setError(data.detail || "Invalid email or password");
-      }
+      localStorage.setItem("token", data.access_token);
+      localStorage.setItem("role", data.role);
+      navigate("/dashboard");
     } catch (err) {
-      setError("Connection error. Please try again.");
+      // apiRequest already toasted the error, but we can set local state if we want inline display
+      setError(err.message || "Connection error. Please try again.");
     } finally {
       setLoading(false);
     }

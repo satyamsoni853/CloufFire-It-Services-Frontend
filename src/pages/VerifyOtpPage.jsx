@@ -1,6 +1,8 @@
 import React, { useState, useEffect } from "react";
 import { useNavigate, useLocation, Link } from "react-router-dom";
 import { motion } from "framer-motion";
+import { apiRequest } from "../utils/api";
+import toast from "react-hot-toast";
 
 const VerifyOtpPage = () => {
   const [otp, setOtp] = useState(["", "", "", "", "", ""]);
@@ -46,29 +48,20 @@ const VerifyOtpPage = () => {
     setError("");
 
     try {
-      const API = import.meta.env.VITE_API_URL || "http://localhost:8000";
-      const response = await fetch(`${API}/verify-otp`, {
+      const data = await apiRequest("/verify-otp", {
         method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
         body: JSON.stringify({
           token: pending_token,
           otp: otpString,
         }),
       });
 
-      const data = await response.json();
-
-      if (response.ok) {
-        localStorage.setItem("token", data.access_token);
-        localStorage.setItem("role", data.role);
-        navigate("/dashboard");
-      } else {
-        setError(data.detail || "Invalid or expired OTP");
-      }
+      localStorage.setItem("token", data.access_token);
+      localStorage.setItem("role", data.role);
+      toast.success(data.message || "Account created!");
+      navigate("/dashboard");
     } catch (err) {
-      setError("Connection error. Please try again.");
+      setError(err.message || "Connection error. Please try again.");
     } finally {
       setLoading(false);
     }

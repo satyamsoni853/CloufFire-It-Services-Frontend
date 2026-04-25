@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from "react";
 import { useSearchParams, Link } from "react-router-dom";
 import { motion } from "framer-motion";
+import { apiRequest } from "../utils/api";
 
 const VerifyEmailPage = () => {
   const [searchParams] = useSearchParams();
@@ -23,24 +24,13 @@ const VerifyEmailPage = () => {
       }
 
       try {
-        const API = import.meta.env.VITE_API_URL || "http://localhost:8000";
-        const response = await fetch(`${API}/verify-email?token=${token}`);
-        const data = await response.json();
-
-        if (response.ok) {
-          setStatus({ loading: false, success: true, message: data.message });
-        } else {
-          setStatus({
-            loading: false,
-            success: false,
-            message: data.detail || "Verification failed.",
-          });
-        }
+        const data = await apiRequest(`/verify-email?token=${token}`);
+        setStatus({ loading: false, success: true, message: data.message || "Email verified successfully!" });
       } catch (err) {
         setStatus({
           loading: false,
           success: false,
-          message: "Connection error. Please try again later.",
+          message: err.message || "Verification failed.",
         });
       }
     };

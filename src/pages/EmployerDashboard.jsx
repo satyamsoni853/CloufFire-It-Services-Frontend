@@ -1,9 +1,9 @@
 import React, { useState, useEffect } from 'react';
-import DashboardLayout from '../components/DashboardLayout';
 import { Users, FileText, Wrench, Building2, Search, PieChart as PieChartIcon, TrendingUp, BarChart as BarChartIcon } from 'lucide-react';
 import { BarChart, Bar, AreaChart, Area, PieChart, Pie, Cell, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from 'recharts';
-
-const API = import.meta.env.VITE_API_URL || 'http://localhost:8000';
+import { apiRequest } from '../utils/api';
+import toast from 'react-hot-toast';
+import UserProfileModal from '../components/UserProfileModal';
 
 const EmployerDashboard = () => {
   const [stats, setStats] = useState(null);
@@ -11,14 +11,18 @@ const EmployerDashboard = () => {
   const [profile, setProfile] = useState(null);
   const [loading, setLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState('');
+  const [contactModal, setContactModal] = useState({ open: false, seeker: null });
+  const [contactMessage, setContactMessage] = useState('');
+  const [sendingContact, setSendingContact] = useState(false);
+  const [selectedUser, setSelectedUser] = useState(null);
 
   useEffect(() => {
     const token = localStorage.getItem('token');
     if (!token) { window.location.href = '/login'; return; }
     Promise.all([
-      fetch(`${API}/dashboard/stats`, { headers: { Authorization: `Bearer ${token}` } }).then(r => r.ok ? r.json() : null),
-      fetch(`${API}/employer/jobseekers`, { headers: { Authorization: `Bearer ${token}` } }).then(r => r.ok ? r.json() : []),
-      fetch(`${API}/profile`, { headers: { Authorization: `Bearer ${token}` } }).then(r => r.ok ? r.json() : null),
+      apiRequest('/dashboard/stats').catch(() => null),
+      apiRequest('/employer/jobseekers').catch(() => []),
+      apiRequest('/profile').catch(() => null),
     ]).then(([s, j, p]) => { setStats(s); setJobseekers(j); setProfile(p); setLoading(false); })
       .catch(() => setLoading(false));
   }, []);
@@ -28,12 +32,35 @@ const EmployerDashboard = () => {
     s.skills?.toLowerCase().includes(searchTerm.toLowerCase())
   );
 
+  const handleContact = (seeker) => {
+    setContactModal({ open: true, seeker });
+    setContactMessage(`Hi ${seeker.full_name},\n\nI came across your profile on Cloudfire and would love to discuss a potential opportunity.\n\nBest regards,\n${profile?.full_name || 'Employer'}`);
+  };
+
+  const handleSendContact = async () => {
+    if (!contactMessage.trim()) { toast.error('Please enter a message'); return; }
+    setSendingContact(true);
+    try {
+      const data = await apiRequest('/contact-seeker', {
+        method: 'POST',
+        body: JSON.stringify({
+          seeker_email: contactModal.seeker.email,
+          message: contactMessage,
+        }),
+      });
+      toast.success(data.message);
+      setContactModal({ open: false, seeker: null });
+    } catch (err) {
+      console.error("Failed to contact", err);
+    } finally {
+      setSendingContact(false);
+    }
+  };
+
   if (loading) return (
-    <DashboardLayout>
-      <div className="flex items-center justify-center h-[60vh]">
-        <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-[#ff7301]"></div>
-      </div>
-    </DashboardLayout>
+    <div className="flex items-center justify-center h-[60vh]">
+      <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-[#ff7301]"></div>
+    </div>
   );
 
   const greeting = () => {
@@ -44,7 +71,7 @@ const EmployerDashboard = () => {
   };
 
   return (
-    <DashboardLayout>
+    <>
       {/* Hero */}
       <div className="mb-10">
         <p className="text-gray-400 font-semibold text-sm uppercase tracking-widest mb-1">{greeting()}</p>
@@ -80,8 +107,8 @@ const EmployerDashboard = () => {
             <ResponsiveContainer width="100%" height="100%">
               <PieChart>
                 <Pie data={[
-                  { name: 'Fresher', value: 40, color: '#3b82f6' },
-                  { name: 'Experienced', value: 60, color: '#10b981' }
+                  { name: 'Fresher', value: jobseekers.filter(s => s.work_status?.toLowerCase() === 'fresher').length || 1, color: '#3b82f6' },
+                  { name: 'Experienced', value: jobseekers.filter(s => s.work_status?.toLowerCase() === 'experienced').length || 1, color: '#10b981' }
                 ]} cx="50%" cy="50%" innerRadius={60} outerRadius={80} paddingAngle={5} dataKey="value">
                   <Cell fill="#3b82f6" />
                   <Cell fill="#10b981" />
@@ -170,8 +197,8 @@ const EmployerDashboard = () => {
             {filteredSeekers.map((seeker) => (
               <div key={seeker.email} className="p-6 sm:px-8 hover:bg-gray-50/50 transition-colors group">
                 <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-                  <div className="flex items-center gap-4">
-                    <div className="w-12 h-12 rounded-2xl bg-gray-100 overflow-hidden shrink-0 border border-gray-200">
+                  <div className="flex items-center gap-4 cursor-pointer" onClick={() => setSelectedUser(seeker)}>
+                    <div className="w-12 h-12 rounded-2xl bg-gray-100 overflow-hidden shrink-0 border border-gray-200 group-hover:ring-2 group-hover:ring-blue-500/30 transition-all">
                       <img src={seeker.profile_image_url || `https://api.dicebear.com/7.x/avataaars/svg?seed=${seeker.full_name}`} alt="" className="w-full h-full object-cover" />
                     </div>
                     <div>
@@ -185,13 +212,23 @@ const EmployerDashboard = () => {
                     </div>
                   </div>
                   <div className="flex items-center gap-2 sm:gap-3">
+                    <button
+                      onClick={() => setSelectedUser(seeker)}
+                      className="px-4 py-2 bg-gray-100 text-gray-700 rounded-xl text-xs font-bold hover:bg-gray-200 transition-all flex items-center gap-1.5 cursor-pointer"
+                    >
+                      <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" /><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" /></svg>
+                      View Profile
+                    </button>
                     {seeker.resume_url && (
                       <a href={seeker.resume_url} target="_blank" rel="noreferrer" className="px-4 py-2 bg-gray-100 text-gray-700 rounded-xl text-xs font-bold hover:bg-gray-200 transition-all flex items-center gap-1.5">
                         <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" /></svg>
                         Resume
                       </a>
                     )}
-                    <button className="px-5 py-2 bg-blue-600 text-white rounded-xl text-xs font-bold hover:bg-blue-700 transition-all">
+                    <button 
+                      onClick={() => handleContact(seeker)}
+                      className="px-5 py-2 bg-blue-600 text-white rounded-xl text-xs font-bold hover:bg-blue-700 transition-all cursor-pointer"
+                    >
                       Contact
                     </button>
                   </div>
@@ -216,11 +253,56 @@ const EmployerDashboard = () => {
           <h3 className="text-xl font-bold font-serif mb-1">Need specific talent?</h3>
           <p className="text-blue-200 text-sm">Post a job listing and let qualified candidates come to you.</p>
         </div>
-        <a href="/dashboard/jobs" className="shrink-0 bg-white text-blue-700 px-8 py-3.5 rounded-2xl font-bold hover:bg-blue-50 transition-all shadow-lg">
+        <a href="/dashboard/jobs/post" className="shrink-0 bg-white text-blue-700 px-8 py-3.5 rounded-2xl font-bold hover:bg-blue-50 transition-all shadow-lg">
           Post a Job
         </a>
       </div>
-    </DashboardLayout>
+
+      {/* Contact Modal */}
+      {contactModal.open && (
+        <div className="fixed inset-0 bg-black/50 z-[200] flex items-center justify-center p-4">
+          <div className="bg-white rounded-2xl w-full max-w-lg overflow-hidden shadow-2xl">
+            <div className="p-6 border-b border-gray-100 flex justify-between items-center bg-gray-50">
+              <div>
+                <h2 className="text-xl font-bold text-gray-900">Contact {contactModal.seeker?.full_name}</h2>
+                <p className="text-sm text-gray-400 mt-1">{contactModal.seeker?.email}</p>
+              </div>
+              <button onClick={() => setContactModal({ open: false, seeker: null })} className="text-gray-400 hover:text-gray-600 cursor-pointer">
+                <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M6 18L18 6M6 6l12 12" />
+                </svg>
+              </button>
+            </div>
+            <div className="p-8">
+              <label className="block text-sm font-bold text-gray-700 mb-2">Your Message</label>
+              <textarea
+                rows="6"
+                value={contactMessage}
+                onChange={(e) => setContactMessage(e.target.value)}
+                className="w-full px-4 py-3 rounded-xl border border-gray-200 focus:border-blue-500 focus:ring-2 focus:ring-blue-500/20 outline-none transition-all resize-none"
+                placeholder="Write a message to this candidate..."
+              ></textarea>
+              <p className="text-xs text-gray-400 mt-2">An email will be sent to the candidate with your message and contact details.</p>
+              <div className="mt-6 flex justify-end space-x-4">
+                <button 
+                  onClick={() => setContactModal({ open: false, seeker: null })}
+                  className="px-6 py-3 rounded-xl font-bold text-gray-500 hover:bg-gray-100 transition-all cursor-pointer"
+                >Cancel</button>
+                <button 
+                  onClick={handleSendContact}
+                  disabled={sendingContact}
+                  className="bg-blue-600 text-white px-8 py-3 rounded-xl font-bold shadow-lg hover:bg-blue-700 transition-all cursor-pointer disabled:opacity-50"
+                >{sendingContact ? 'Sending...' : 'Send Message'}</button>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+      {/* Profile Detail Modal */}
+      {selectedUser && (
+        <UserProfileModal user={selectedUser} onClose={() => setSelectedUser(null)} />
+      )}
+    </>
   );
 };
 

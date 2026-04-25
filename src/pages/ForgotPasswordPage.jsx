@@ -1,6 +1,8 @@
 import React, { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { motion } from "framer-motion";
+import { apiRequest } from "../utils/api";
+import toast from "react-hot-toast";
 
 const ForgotPasswordPage = () => {
   const [email, setEmail] = useState("");
@@ -14,25 +16,15 @@ const ForgotPasswordPage = () => {
     setStatus({ type: "", message: "" });
 
     try {
-      const API = import.meta.env.VITE_API_URL || "http://localhost:8000";
-      const response = await fetch(`${API}/forgot-password?email=${email}`, {
+      const data = await apiRequest(`/forgot-password?email=${encodeURIComponent(email)}`, {
         method: "POST",
       });
-
-      const data = await response.json();
-
-      if (response.ok) {
-        navigate("/reset-password", { state: { email } });
-      } else {
-        setStatus({
-          type: "error",
-          message: data.detail || "Something went wrong",
-        });
-      }
+      toast.success(data.message || "Reset code sent!");
+      navigate("/reset-password", { state: { email } });
     } catch (err) {
       setStatus({
         type: "error",
-        message: "Connection error. Please try again.",
+        message: err.message || "Something went wrong",
       });
     } finally {
       setLoading(false);

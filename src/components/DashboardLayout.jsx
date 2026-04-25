@@ -1,54 +1,61 @@
-import React, { useState, useEffect } from 'react';
-import { Link, useLocation } from 'react-router-dom';
+import React, { useState, useEffect, useMemo } from 'react';
+import { Link, useLocation, Outlet } from 'react-router-dom';
+import { apiRequest } from '../utils/api';
 
 const DashboardLayout = ({ children }) => {
+  const location = useLocation();
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
   const [isUserMenuOpen, setIsUserMenuOpen] = useState(false);
   const [isNotifyOpen, setIsNotifyOpen] = useState(false);
   const [userData, setUserData] = useState(null);
   const [notifications, setNotifications] = useState([]);
-  const [menuItems, setMenuItems] = useState([
-    { label: 'Overview', path: '/dashboard', icon: 'M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6' },
-    { label: 'Jobs', path: '/dashboard/jobs', icon: 'M21 13.255A23.931 23.931 0 0112 15c-3.183 0-6.22-.62-9-1.745M16 6V4a2 2 0 00-2-2h-4a2 2 0 00-2 2v2m4 6h.01M5 20h14a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z' },
-    { label: 'My Profile', path: '/dashboard/profile', icon: 'M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z' },
-  ]);
-  const location = useLocation();
+
+  const getMenuItems = (role) => {
+    const items = [
+      { label: 'Overview', path: '/dashboard', icon: 'M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6' },
+      { label: 'Jobs', path: '/dashboard/jobs', icon: 'M21 13.255A23.931 23.931 0 0112 15c-3.183 0-6.22-.62-9-1.745M16 6V4a2 2 0 00-2-2h-4a2 2 0 00-2 2v2m4 6h.01M5 20h14a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z' },
+    ];
+    
+    if (role === 'jobseeker') {
+      items.push({ label: 'Saved Jobs', path: '/dashboard/saved-jobs', icon: 'M5 5a2 2 0 012-2h10a2 2 0 012 2v16l-7-3.5L5 21V5z' });
+      items.push({ label: 'Applications', path: '/dashboard/applications', icon: 'M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z' });
+    }
+
+    if (role === 'employer' || role === 'admin') {
+      items.push({ label: 'Job Seekers', path: '/dashboard/jobseekers', icon: 'M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z' });
+      if (role === 'employer') {
+        items.push({ label: 'My Posted Jobs', path: '/dashboard/my-jobs', icon: 'M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4' });
+      }
+    }
+    
+    items.push({ label: 'My Profile', path: '/dashboard/profile', icon: 'M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z' });
+    items.push({ label: 'Reports', path: '/dashboard/reports', icon: 'M9 17v-2m3 2v-4m3 4v-6m2 10H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z' });
+    items.push({ label: 'Settings', path: '/dashboard/settings', icon: 'M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z M15 12a3 3 0 11-6 0 3 3 0 016 0z' });
+    return items;
+  };
+
+  // Initialize menu items from localStorage role for immediate display
+  const [menuItems, setMenuItems] = useState(() => getMenuItems(localStorage.getItem('role')));
 
   useEffect(() => {
     const fetchDashboardData = async () => {
       const token = localStorage.getItem('token');
       if (!token) return;
       
-      const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:8000';
-      
       try {
-        const [profileRes, notifyRes] = await Promise.all([
-          fetch(`${API_URL}/profile`, { headers: { 'Authorization': `Bearer ${token}` } }),
-          fetch(`${API_URL}/notifications`, { headers: { 'Authorization': `Bearer ${token}` } })
+        const [user, notificationsData] = await Promise.all([
+          apiRequest('/profile').catch(() => null),
+          apiRequest('/notifications').catch(() => [])
         ]);
 
-        if (profileRes.ok) {
-          const userData = await profileRes.json();
-          setUserData(userData);
-          
-          const items = [
-            { label: 'Overview', path: '/dashboard', icon: 'M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6' },
-            { label: 'Jobs', path: '/dashboard/jobs', icon: 'M21 13.255A23.931 23.931 0 0112 15c-3.183 0-6.22-.62-9-1.745M16 6V4a2 2 0 00-2-2h-4a2 2 0 00-2 2v2m4 6h.01M5 20h14a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z' },
-            { label: 'My Profile', path: '/dashboard/profile', icon: 'M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z' },
-          ];
-          
-          if (userData.role === 'employer' || userData.role === 'admin') {
-            items.push({ label: 'Job Seekers', path: '/dashboard/jobseekers', icon: 'M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z' });
-          }
-          
-          items.push({ label: 'Reports', path: '/dashboard/reports', icon: 'M9 17v-2m3 2v-4m3 4v-6m2 10H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z' });
-          setMenuItems(items);
-          
-          if (!localStorage.getItem('role')) localStorage.setItem('role', userData.role);
+        if (user) {
+          setUserData(user);
+          // Update menu items if role changed or to ensure consistency
+          setMenuItems(getMenuItems(user.role));
+          localStorage.setItem('role', user.role);
         }
 
-        if (notifyRes.ok) {
-          const notificationsData = await notifyRes.ok ? await notifyRes.json() : [];
+        if (Array.isArray(notificationsData)) {
           setNotifications(notificationsData);
         }
       } catch (err) {
@@ -56,7 +63,8 @@ const DashboardLayout = ({ children }) => {
       }
     };
     fetchDashboardData();
-  }, [location.pathname]);
+    // Run only once on mount to prevent sidebar flicker on navigation
+  }, []);
 
   const handleLogout = () => {
     localStorage.removeItem('token');
@@ -254,7 +262,7 @@ const DashboardLayout = ({ children }) => {
 
         {/* Dashboard Content */}
         <div className="max-w-[1100px] mx-auto px-4 sm:px-6 lg:px-10 py-8">
-          {children}
+          <Outlet />
         </div>
       </main>
     </div>
@@ -262,4 +270,3 @@ const DashboardLayout = ({ children }) => {
 };
 
 export default DashboardLayout;
-

@@ -1,6 +1,8 @@
 import React, { useState } from "react";
 import { useLocation, useNavigate, Link } from "react-router-dom";
 import { motion } from "framer-motion";
+import { apiRequest } from "../utils/api";
+import toast from "react-hot-toast";
 
 const ResetPasswordPage = () => {
   const location = useLocation();
@@ -28,6 +30,7 @@ const ResetPasswordPage = () => {
     e.preventDefault();
     if (formData.new_password !== formData.confirm_password) {
       setStatus({ type: "error", message: "Passwords do not match" });
+      toast.error("Passwords do not match");
       return;
     }
 
@@ -35,33 +38,20 @@ const ResetPasswordPage = () => {
     setStatus({ type: "", message: "" });
 
     try {
-      const API = import.meta.env.VITE_API_URL || "http://localhost:8000";
-      const response = await fetch(
-        `${API}/reset-password?email=${email}&otp=${formData.otp}&new_password=${formData.new_password}`,
-        {
-          method: "POST",
-        },
+      const data = await apiRequest(
+        `/reset-password?email=${encodeURIComponent(email)}&otp=${encodeURIComponent(formData.otp)}&new_password=${encodeURIComponent(formData.new_password)}`,
+        { method: "POST" }
       );
-
-      const data = await response.json();
-
-      if (response.ok) {
-        navigate("/login", {
-          state: {
-            message:
-              "Password reset successful! Please login with your new password.",
-          },
-        });
-      } else {
-        setStatus({
-          type: "error",
-          message: data.detail || "Something went wrong",
-        });
-      }
+      toast.success(data.message || "Password reset successful!");
+      navigate("/login", {
+        state: {
+          message: "Password reset successful! Please login with your new password.",
+        },
+      });
     } catch (err) {
       setStatus({
         type: "error",
-        message: "Connection error. Please try again.",
+        message: err.message || "Something went wrong",
       });
     } finally {
       setLoading(false);

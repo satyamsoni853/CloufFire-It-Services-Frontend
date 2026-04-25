@@ -1,5 +1,4 @@
 import React from 'react';
-import DashboardLayout from '../components/DashboardLayout';
 
 const ReportsPage = () => {
   const role = localStorage.getItem('role') || 'jobseeker';
@@ -17,7 +16,7 @@ const ReportsPage = () => {
   ];
 
   return (
-    <DashboardLayout>
+    <>
       <div className="mb-8">
         <h1 className="font-serif font-bold text-[32px] text-secondary">Analytics Report</h1>
         <p className="text-gray-500">
@@ -81,7 +80,7 @@ const ReportsPage = () => {
           </div>
         </div>
       </div>
-    </DashboardLayout>
+    </>
   );
 };
 

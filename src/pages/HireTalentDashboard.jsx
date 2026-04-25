@@ -1,31 +1,49 @@
 import React, { useState, useEffect } from 'react';
-import DashboardLayout from '../components/DashboardLayout';
 import { User, FileText, Building2, Users, CheckCircle, TrendingUp, BarChart as BarChartIcon, PieChart as PieChartIcon, Edit3, Settings } from 'lucide-react';
 import { BarChart, Bar, LineChart, Line, PieChart, Pie, Cell, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from 'recharts';
+import { apiRequest } from '../utils/api';
 
-const API = import.meta.env.VITE_API_URL || 'http://localhost:8000';
 
 const HireTalentDashboard = () => {
   const [stats, setStats] = useState(null);
   const [profile, setProfile] = useState(null);
   const [loading, setLoading] = useState(true);
 
+  const [recommendedJobs, setRecommendedJobs] = useState([]);
+
   useEffect(() => {
     const token = localStorage.getItem('token');
     if (!token) { window.location.href = '/login'; return; }
     Promise.all([
-      fetch(`${API}/dashboard/stats`, { headers: { Authorization: `Bearer ${token}` } }).then(r => r.ok ? r.json() : null),
-      fetch(`${API}/profile`, { headers: { Authorization: `Bearer ${token}` } }).then(r => r.ok ? r.json() : null),
-    ]).then(([s, p]) => { setStats(s); setProfile(p); setLoading(false); })
+      apiRequest('/dashboard/stats').catch(() => null),
+      apiRequest('/profile').catch(() => null),
+      apiRequest('/jobs').catch(() => [])
+    ]).then(([s, p, j]) => { 
+      setStats(s); 
+      setProfile(p); 
+      
+      // Calculate recommended jobs
+      if (p && p.skills && j && Array.isArray(j) && j.length > 0) {
+        const userSkills = p.skills.toLowerCase().split(',').map(s => s.trim());
+        const recs = j.filter(job => {
+          if (!job.skills_required) return false;
+          const jobSkills = job.skills_required.toLowerCase().split(',').map(s => s.trim());
+          return userSkills.some(skill => jobSkills.includes(skill));
+        }).slice(0, 3);
+        setRecommendedJobs(recs.length > 0 ? recs : j.slice(0, 3));
+      } else if (j && Array.isArray(j)) {
+        setRecommendedJobs(j.slice(0, 3));
+      }
+      
+      setLoading(false); 
+    })
       .catch(() => setLoading(false));
   }, []);
 
   if (loading) return (
-    <DashboardLayout>
-      <div className="flex items-center justify-center h-[60vh]">
-        <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-[#ff7301]"></div>
-      </div>
-    </DashboardLayout>
+    <div className="flex items-center justify-center h-[60vh]">
+      <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-[#ff7301]"></div>
+    </div>
   );
 
   const completeness = stats?.profile_completeness || 0;
@@ -53,7 +71,7 @@ const HireTalentDashboard = () => {
   ];
 
   return (
-    <DashboardLayout>
+    <>
       {/* Hero Greeting */}
       <div className="mb-10">
         <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
@@ -173,6 +191,35 @@ const HireTalentDashboard = () => {
         ))}
       </div>
 
+      {/* Recommended Jobs */}
+      <div className="mb-10">
+        <div className="flex justify-between items-center mb-5">
+          <h3 className="text-xl font-bold text-gray-900 font-serif">Recommended For You</h3>
+          <a href="/dashboard/jobs" className="text-sm font-bold text-[#ff7301] hover:underline">View All</a>
+        </div>
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-5">
+          {recommendedJobs.length > 0 ? recommendedJobs.map(job => (
+            <div key={job.id} className="bg-white p-6 rounded-3xl border border-gray-100 shadow-sm hover:shadow-md transition-all flex flex-col">
+              <div className="flex-1">
+                <h4 className="font-bold text-gray-900 mb-1 line-clamp-1" title={job.title}>{job.title}</h4>
+                <p className="text-sm text-gray-500 mb-4">{job.company}</p>
+                <div className="flex flex-wrap gap-2 mb-4">
+                  {job.location && <span className="text-[10px] font-bold uppercase tracking-wider bg-gray-100 text-gray-600 px-2 py-1 rounded">{job.location}</span>}
+                  {job.type && <span className="text-[10px] font-bold uppercase tracking-wider bg-blue-50 text-blue-600 px-2 py-1 rounded">{job.type}</span>}
+                </div>
+              </div>
+              <a href="/dashboard/jobs" className="mt-auto pt-4 border-t border-gray-100 text-[#ff7301] font-bold text-sm hover:text-orange-600 flex items-center gap-1">
+                Apply Now <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M9 5l7 7-7 7"/></svg>
+              </a>
+            </div>
+          )) : (
+            <div className="col-span-3 text-center py-8 bg-white rounded-3xl border border-gray-100">
+              <p className="text-gray-500">Add skills to your profile to get personalized recommendations.</p>
+            </div>
+          )}
+        </div>
+      </div>
+
       {/* Quick Profile Summary */}
       {profile && (
         <div className="bg-gradient-to-br from-gray-900 to-gray-800 rounded-3xl p-8 text-white">
@@ -194,7 +241,7 @@ const HireTalentDashboard = () => {
           </div>
         </div>
       )}
-    </DashboardLayout>
+    </>
   );
 };
 
