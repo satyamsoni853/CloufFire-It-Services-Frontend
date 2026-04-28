@@ -36,7 +36,7 @@ const ContactHero = () => {
             <img
               src="/Contact/undraw_contact-us_kcoa 1.svg"
               alt="Contact Us Illustration"
-              className="w-[613px] h-[415px] object-contain block md:w-full md:h-auto md:max-w-[400px]"
+              className="w-[613px] h-[515px] object-contain block md:w-full md:h-auto md:max-w-[600px]"
             />
           </div>
         </div>

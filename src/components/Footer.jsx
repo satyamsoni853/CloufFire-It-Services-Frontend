@@ -53,7 +53,7 @@ const Footer = () => {
           {/* Column 2: Company */}
           <div>
             <h3 className="text-[#141414] font-serif font-bold text-[22px] mb-8">Company</h3>
-            <ul className="space-y-4">
+            <ul className="space-y-2">
               <li className="font-sans text-[16px] text-[#555] hover:text-[#ff7e06] cursor-pointer transition-colors">Home</li>
               <li className="font-sans text-[16px] text-[#555] hover:text-[#ff7e06] cursor-pointer transition-colors">About</li>
               <li className="font-sans text-[16px] text-[#ff7e06] font-semibold cursor-pointer">Services</li>
@@ -134,25 +134,25 @@ const Footer = () => {
                 name="name"
                 required
                 placeholder="Name" 
-                className="w-full h-[48px] px-5 bg-white border border-[#eee] rounded-[10px] text-[15px] focus:outline-none focus:border-[#ff7e06] transition-all"
+                className="w-[317px] h-[48px] px-5 bg-white border-2 border-[#cecdcd] rounded-[10px] text-[15px] focus:outline-none focus:border-[#ff7e06] transition-all"
               />
               <input 
                 type="email" 
                 name="email"
                 required
                 placeholder="email@gmail.com" 
-                className="w-full h-[48px] px-5 bg-white border border-[#eee] rounded-[10px] text-[15px] focus:outline-none focus:border-[#ff7e06] transition-all"
+                className="w-[317px] h-[48px] px-5 bg-white border-2 border-[#cecdcd] rounded-[10px] text-[15px] focus:outline-none focus:border-[#ff7e06] transition-all"
               />
               <input 
                 type="tel" 
                 name="phone"
                 placeholder="+0 123 456 789" 
-                className="w-full h-[48px] px-5 bg-white border border-[#eee] rounded-[10px] text-[15px] focus:outline-none focus:border-[#ff7e06] transition-all"
+                className="w-[317px] h-[48px] px-5 bg-white border-2 border-[#cecdcd] rounded-[10px] text-[15px] focus:outline-none focus:border-[#ff7e06] transition-all"
               />
               <button 
                 type="submit" 
                 disabled={loading}
-                className="w-full h-[52px] mt-2 bg-black text-white rounded-[10px] flex items-center justify-center gap-3 font-semibold text-[16px] hover:bg-[#1a1a1a] transition-all shadow-lg disabled:opacity-70"
+                className="w-[317px] h-[52px] mt-2 bg-black text-white rounded-[10px] flex items-center justify-center gap-3 font-semibold text-[16px] hover:bg-[#1a1a1a] transition-all shadow-lg disabled:opacity-70"
               >
                 {loading ? "Sending..." : "Submit Now"}
                 {!loading && (

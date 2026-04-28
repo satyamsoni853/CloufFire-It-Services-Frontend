@@ -2,7 +2,7 @@ import React from "react";
 
 const AboutMission = () => {
   return (
-    <section id="about-mission" className="relative py-[90px] pb-[100px] bg-white overflow-hidden md:py-[60px] md:pb-[70px] px-4 md:px-0">
+    <section id="about-mission" className="relative py-[60px] pb-[70px] bg-white overflow-hidden md:py-[40px] md:pb-[50px] px-4 md:px-0">
       <div className="grid grid-cols-1 md:grid-cols-[1.1fr_1fr] gap-10 md:gap-16 items-center mx-auto max-w-[1280px]">
         {/* Left — Image composition */}
         <div className="relative py-[20px] pl-[30px] md:p-0">
@@ -47,7 +47,7 @@ const AboutMission = () => {
           <img
             src="/about/left-about.png"
             alt="Our experienced team collaborating in a modern workspace"
-            className="w-[578px] h-[703px] object-cover block rounded-[20px] md:w-full md:max-w-[400px] md:h-auto md:mx-auto"
+            className="w-[578px] h-[703px] object-cover block rounded-[20px] md:w-full md:max-w-[550px] md:h-auto md:mx-auto"
           />
         </div>
 
@@ -61,28 +61,16 @@ const AboutMission = () => {
             Our Mission
           </h2>
 
-          <p className="font-sans font-normal text-[18px] leading-[28px] text-[#666] mb-[20px] md:text-[16px] md:leading-[24px]">
-            Virasat Solutions A Leading And Skilled LMS, ELearning &amp;
-            ECommerce Application Development Company. We, At Virasat
-            Solutions, Have Dedicated And Passionate Teams To Cater To Each
-            And Every Aspect Of Your ELearning &amp; ECommerce Business.
+          <p className=" font-normal text-[18px] leading-[28px] text-[#666] mb-[20px] md:text-[16px] md:leading-[24px]">
+            Virasat Solutions a leading and skilled LMS, eLearning &amp; eCommerce application Development Company. We, at Virasat Solutions, have dedicated and passionate teams to cater to each and every aspect of your eLearning &amp; eCommerce business.
           </p>
 
-          <p className="font-sans font-normal text-[18px] leading-[28px] text-[#666] mb-[20px] md:text-[16px] md:leading-[24px]">
-            Whether Be It LMS{" "}
-            <span className="text-[#ff7301] font-semibold italic">
-              (Learning Management System)
-            </span>{" "}
-            Design And Development, E-Commerce Web And Mobile Applications
-            Development, Moodle Development, PHP Frameworks &amp; CMS
-            Development, Etc. We Will Assist You On All The Areas.
+          <p className=" font-normal text-[18px] leading-[28px] text-[#666] mb-[20px] md:text-[16px] md:leading-[24px]">
+            Whether be it LMS (Learning Management System) design and development, e-Commerce web and mobile applications development, Moodle development, PHP Frameworks &amp; CMS development, etc. We will assist you on all the areas.
           </p>
 
-          <p className="font-sans font-normal text-[18px] leading-[28px] text-[#666] mb-[20px] md:text-[16px] md:leading-[24px]">
-            And We Also Offer The Best Maintenance And Support Solutions
-            According To The Client's Requirements Like Custom Theme
-            Development, Plugin Development, Migration, Integration, And
-            Customization Services.
+          <p className=" font-normal text-[18px] leading-[28px] text-[#666] mb-[20px] md:text-[16px] md:leading-[24px]">
+            And we also offer the best maintenance and support solutions according to the client’s requirements Like Custom Theme Development, Plugin Development, Migration, Integration, and Customization Services.
           </p>
         </div>
       </div>

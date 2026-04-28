@@ -17,7 +17,7 @@ const Clients = () => {
         </h2>
 
         <div className="relative overflow-hidden pt-4 [mask-image:linear-gradient(to_right,transparent,black_10%,black_90%,transparent)]">
-          <div className="animate-[ticker_30s_linear_infinite] flex w-max gap-6 hover:pause-hover md:gap-10">
+          <div className="animate-[ticker_30s_linear_infinite] shadow-2xl shadow-gray-500/20 flex w-max gap-6 hover:pause-hover md:gap-10">
             {[...clientLogos, ...clientLogos, ...clientLogos].map((client, idx) => (
               <div
                 key={idx}

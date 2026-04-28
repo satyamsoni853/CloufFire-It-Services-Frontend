@@ -2,7 +2,7 @@ import React from 'react';
 
 const Interview = () => {
   return (
-    <section className="py-12 sm:py-24 bg-white text-center">
+    <section className="py-12 sm:py-16 bg-white text-center">
       <div className="max-w-[1270px] mx-auto px-6">
         {/* Main Heading */}
         <h2 className="font-serif text-[32px] md:text-[48px] font-bold text-gray-900 mb-6 leading-tight max-w-4xl mx-auto">
@@ -10,7 +10,7 @@ const Interview = () => {
         </h2>
         
         {/* Main Subtitle */}
-        <p className="font-sans text-base sm:text-[18px] leading-relaxed text-gray-500 max-w-3xl mx-auto mb-12 sm:mb-20 opacity-80">
+        <p className="font-sans text-base sm:text-[18px] leading-relaxed text-gray-500 max-w-3xl mx-auto mb-8 sm:mb-12 opacity-80">
           Our AI-Powered Interview System Provides In-Depth Candidate Evaluation With Real-Time Analysis, Helping You Make Better Hiring Decisions Faster.
         </p>
         
@@ -30,10 +30,10 @@ const Interview = () => {
                     <img src="/Assests/icon.png" className="w-5 h-5 sm:w-6 sm:h-6 object-contain" alt="Benefit Icon" />
                   </div>
                   <div>
-                    <div className="font-sans font-bold text-base sm:text-[18px] leading-tight mb-2 text-white">
+                    <div className="font-sans font-bold text-base sm:text-[18px] leading-tight mb-2 text-black">
                       Lorem Ipsum Is Simply Dummy Text
                     </div>
-                    <div className="font-sans font-normal text-sm sm:text-[14px] leading-relaxed text-white/90">
+                    <div className="font-sans font-normal text-sm sm:text-[14px] leading-relaxed text-black/90">
                       Lorem Ipsum Is Simply Dummy Text Of The Printing And Typesetting Industry.
                     </div>
                   </div>

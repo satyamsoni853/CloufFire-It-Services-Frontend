@@ -3,7 +3,7 @@ import React, { useState } from 'react';
 const offers = [
   {
     title: 'Rapid AI Talent Deployment',
-    subtitle: 'We Offer Unlimited Moodle',
+    subtitle: 'We offer unlimited Moodle',
     content: 'Lorem Ipsum Is Simply Dummy Text Of The Printing And Typesetting Industry. Lorem Ipsum Has Been The Industry\'s Standard Dummy Text Ever Since The 1500s, When An Unknown Printer Took A Galley Of Type And Scrambled It To Make A Type Specimen Book. It Has Survived Not Only Five Centuries, But Also The Leap Into Electronic Typesetting, Remaining Essentially Unchanged.'
   },
   {
@@ -23,7 +23,7 @@ const CoreOfferings = () => {
   const currentOffer = offers.find(o => o.title === activeOffer);
 
   return (
-    <section className="py-24 bg-white overflow-hidden">
+    <section className="py-16 bg-white overflow-hidden">
       <div className="max-w-[1270px] mx-auto px-6 flex flex-col items-center">
         {/* Main Title */}
         <h2 className="font-serif font-bold text-[32px] sm:text-[48px] mb-4 text-center text-gray-900 leading-tight">
@@ -31,7 +31,7 @@ const CoreOfferings = () => {
         </h2>
         
         {/* Subtitle */}
-        <p className="font-sans font-normal text-sm sm:text-[18px] leading-[24px] text-center text-gray-500 mb-12 sm:mb-16 max-w-2xl px-4">
+        <p className="font-sans font-normal text-sm sm:text-[18px] leading-[24px] text-center text-gray-500 mb-8 sm:mb-12 max-w-2xl px-4">
           Comprehensive AI Solutions To Transform Your Talent Acquisition Strategy
         </p>
         
@@ -56,17 +56,39 @@ const CoreOfferings = () => {
                           <img src="/Assests/icon.png" className="w-6 h-6 object-contain" alt="offer icon" />
                        </div>
                        <div className="pt-1">
-                         <div className="font-serif font-bold text-[18px] leading-tight text-gray-900 mb-1">
-                           {offer.title}
-                         </div>
-                         <div className="font-sans font-normal text-[14px] leading-relaxed text-gray-500">
-                           {offer.subtitle}
-                         </div>
+                          <div 
+                            className="text-gray-900 mb-1"
+                            style={{ 
+                              fontFamily: 'Georgia, serif', 
+                              fontWeight: '700', 
+                              fontSize: '18px', 
+                              lineHeight: '26px' 
+                            }}
+                          >
+                            {offer.title}
+                          </div>
+                          <div 
+                            className="text-gray-500"
+                            style={{ 
+                              fontFamily: '"Segoe UI", Tahoma, Geneva, Verdana, sans-serif', 
+                              fontWeight: '400', 
+                              fontSize: '14px', 
+                              lineHeight: '26px' 
+                            }}
+                          >
+                            {offer.subtitle}
+                          </div>
                        </div>
                     </div>
-                    <div className={`mt-4 flex items-center gap-2 font-sans font-semibold text-[14px] ${
-                      isActive ? 'text-[#ff7301]' : 'text-gray-400'
-                    }`}>
+                    <div 
+                      className={`mt-4 flex items-center gap-2 ${isActive ? 'text-[#ff7301]' : 'text-gray-400'}`}
+                      style={{ 
+                        fontFamily: '"Segoe UI", Tahoma, Geneva, Verdana, sans-serif', 
+                        fontWeight: '600', 
+                        fontSize: '14px', 
+                        lineHeight: '26px' 
+                      }}
+                    >
                       Learn more <span className="text-[10px]">▶</span>
                     </div>
                   </div>
@@ -118,4 +140,3 @@ const CoreOfferings = () => {
 };
 
 export default CoreOfferings;
-

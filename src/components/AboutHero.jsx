@@ -4,8 +4,7 @@ import { Link } from "react-router-dom";
 const AboutHero = () => {
   return (
     <>
-    <div className="h-24 md:h-32 bg-[#f6f5f3]"></div>
-    <section className="relative w-full h-[500px] overflow-hidden bg-[#f6f5f3] md:h-auto md:min-h-[360px]">
+    <section className="relative w-full h-[500px] overflow-hidden bg-[#f6f5f3] md:h-auto md:min-h-[460px]">
       <div
         className="absolute inset-0 z-0"
         style={{
@@ -18,7 +17,7 @@ const AboutHero = () => {
       <div className="absolute inset-0 z-0 bg-white/60" />
       <div className="absolute inset-x-0 bottom-0 z-0 h-24 bg-white md:h-28" />
 
-      <div className="relative z-10 mx-auto flex h-full w-full items-center justify-center px-6 pb-12 pt-36 sm:px-8 md:px-24 md:pb-16 md:pt-44 lg:px-24">
+      <div className="relative z-10 mx-auto flex h-full w-full items-center justify-center px-6 pb-12 pt-24 sm:px-8 md:px-24 md:pb-16 md:pt-32 lg:px-24">
         <div className="grid w-full max-w-[1400px] items-center gap-10 md:grid-cols-[minmax(260px,1fr)_minmax(320px,520px)]">
           <div className="mx-auto max-w-[420px] self-center text-center md:mx-0 md:pb-10 md:text-left">
             <nav className="mb-4 flex items-center gap-2 text-sm font-medium text-[#6b6b6b] md:mb-5">
@@ -41,7 +40,7 @@ const AboutHero = () => {
             <img
               src="/about/undraw_team-spirit_18vw 1.svg"
               alt="Team Spirit"
-              className="w-[613px] h-[415px] object-contain block md:w-full md:h-auto md:max-w-[400px]"
+              className="w-[613px] h-[415px] object-contain block md:w-full md:h-auto md:max-w-[550px]"
             />
           </div>
         </div>

@@ -36,7 +36,7 @@ const SuccessHero = () => {
             <img
               src="/Cleint Succes/herosection-image.png"
               alt="Success Illustration"
-              className="w-full max-w-[613px] h-auto object-contain block md:w-full md:h-auto md:max-w-[400px]"
+              className="w-full max-w-[613px] h-auto object-contain block md:w-full md:h-auto md:max-w-[600px]"
             />
           </div>
         </div>

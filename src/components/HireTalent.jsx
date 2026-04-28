@@ -31,34 +31,51 @@ const HireTalent = () => {
   const currentContent = content[activeTab];
 
   return (
-    <section className="py-24 bg-gray-50 overflow-hidden">
+    <section className="py-16 bg-gray-50 overflow-hidden">
       <div className="max-w-[1270px] mx-auto px-6">
         <div className="flex flex-col md:flex-row items-center gap-12 md:gap-20">
           
           {/* Header & Toggle Section (Order 1 on Mobile, Right side on Desktop) */}
           <div className="flex-1 order-1 md:order-2 flex flex-col items-center md:items-start text-center md:text-left">
             {/* Toggle Button */}
-            <div className="inline-flex bg-white rounded-full p-1 mb-8 border border-gray-100 shadow-xl shadow-gray-200/50 relative">
+            <div 
+              className="inline-flex bg-white rounded-full p-1 mb-8 border border-gray-100 shadow-xl shadow-gray-200/50 relative"
+              style={{ width: '337px', height: '60px' }}
+            >
               <div 
                 className="absolute top-1 bottom-1 bg-[#fbb03b] rounded-full transition-all duration-300 shadow-lg shadow-orange-500/20"
                 style={{ 
                   left: activeTab === 'hire' ? '4px' : 'calc(50% + 4px)',
-                  width: 'calc(50% - 8px)'
+                  width: '165px'
                 }}
               ></div>
               <button 
                 onClick={() => setActiveTab('hire')}
-                className={`relative px-4 py-3 rounded-full text-[12px] sm:text-sm font-black tracking-wider uppercase transition-colors z-10 w-fit min-w-[140px] sm:min-w-[170px] flex items-center justify-center whitespace-nowrap ${
-                  activeTab === 'hire' ? 'text-black' : 'text-gray-500 hover:text-gray-800'
-                }`}
+                className={`relative rounded-full transition-colors z-10 flex items-center justify-center whitespace-nowrap`}
+                style={{ 
+                  width: '165px', 
+                  height: '100%',
+                  fontFamily: '"Segoe UI", Tahoma, Geneva, Verdana, sans-serif',
+                  fontWeight: '600',
+                  fontSize: '18px',
+                  lineHeight: '26px',
+                  color: activeTab === 'hire' ? 'black' : '#6b7280'
+                }}
               >
                 HIRE TALENT
               </button>
               <button 
                 onClick={() => setActiveTab('share')}
-                className={`relative px-4 py-3 rounded-full text-[12px] sm:text-sm font-black tracking-wider uppercase transition-colors z-10 w-fit min-w-[140px] sm:min-w-[170px] flex items-center justify-center whitespace-nowrap ${
-                  activeTab === 'share' ? 'text-black' : 'text-gray-500 hover:text-gray-800'
-                }`}
+                className={`relative rounded-full transition-colors z-10 flex items-center justify-center whitespace-nowrap`}
+                style={{ 
+                  width: '165px', 
+                  height: '100%',
+                  fontFamily: '"Segoe UI", Tahoma, Geneva, Verdana, sans-serif',
+                  fontWeight: '600',
+                  fontSize: '18px',
+                  lineHeight: '26px',
+                  color: activeTab === 'share' ? 'black' : '#6b7280'
+                }}
               >
                 SHARE TALENT
               </button>
@@ -81,7 +98,7 @@ const HireTalent = () => {
 
           {/* Imaging Section (Order 2 on Mobile, Left side on Desktop) */}
           <div className="flex-1 order-2 md:order-1 relative flex justify-center">
-            <div className="relative w-full max-w-lg transition-transform hover:scale-105 duration-700">
+            <div className="relative w-full max-w-xl transition-transform hover:scale-105 duration-700">
               <img 
                 src={currentContent.img} 
                 className="w-full h-auto" 

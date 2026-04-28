@@ -14,7 +14,7 @@ const Workflow = () => {
   const currentStep = workflowSteps.find(s => s.id === activeStep);
 
   return (
-    <section className="py-24 bg-white text-center">
+    <section className="py-16 bg-white text-center">
       <div className="max-w-[1400px] mx-auto px-6">
         {/* Main Heading */}
         <h2 className="font-serif font-bold text-[32px] sm:text-[48px] text-gray-900 mb-4 leading-tight text-center">
@@ -22,7 +22,7 @@ const Workflow = () => {
         </h2>
         
         {/* Main Subtitle */}
-        <p className="font-sans font-normal text-sm sm:text-[18px] leading-[24px] text-gray-500 max-w-3xl mx-auto mb-12 sm:mb-20 px-4">
+        <p className="font-sans font-normal text-sm sm:text-[18px] leading-[24px] text-gray-500 max-w-3xl mx-auto mb-8 sm:mb-12 px-4">
           Our Streamlined Process Connects You With Elite AI Talent Quickly And Efficiently, Ensuring A Perfect Match For Your Innovation Needs.
         </p>
         

@@ -36,7 +36,7 @@ const ExpertiseHero = () => {
             <img
               src="/Expertise/undraw_proud-designer_1rcm 1.svg"
               alt="Expertise Illustration"
-              className="w-[613px] h-[415px] object-contain block md:w-full md:h-auto md:max-w-[400px]"
+              className="w-[613px] h-[415px] object-contain block md:w-full md:h-auto md:max-w-[500px]"
             />
           </div>
         </div>

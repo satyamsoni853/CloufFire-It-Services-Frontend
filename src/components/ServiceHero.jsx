@@ -39,7 +39,7 @@ const ServiceHero = () => {
             <img
               src="/services/undraw_progressive-web-app_c4uq(1) 1.svg"
               alt="Services Illustration"
-              className="w-[613px] h-[415px] object-contain block md:w-full md:h-auto md:max-w-[400px]"
+              className="w-[613px] h-[415px] object-contain block md:w-full md:h-auto md:max-w-[500px]"
             />
           </div>
         </div>

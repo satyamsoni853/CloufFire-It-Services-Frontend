@@ -47,11 +47,18 @@ const Hero = () => {
       <div className="max-w-[1800px] mx-auto px-6 md:px-24 relative z-10 w-full mt-10 md:mt-0">
         {/* Content Section */}
         <div className="flex flex-col items-start text-left md:max-w-[900px]">
-          <h1 className="font-serif text-[40px] sm:text-6xl md:text-8xl lg:text-[96px] leading-[1.1] md:leading-[1.05] text-white font-bold mb-4 md:mb-10">
-            Our Framework <br />
-            <span className="text-white">Services</span> <span className="text-primary">Solutions</span>
+          <h1 
+            className="font-serif text-white font-bold mb-4 md:mb-10"
+            style={{ 
+              fontFamily: 'Georgia, serif', 
+              fontSize: '60px', 
+              fontWeight: '700', 
+              lineHeight: '65px' 
+            }}
+          >
+            Our framework services solutions
           </h1>
-          <p className="font-sans text-[15px] sm:text-2xl lg:text-[26px] text-white/80 max-w-[600px] leading-relaxed md:leading-snug font-normal md:font-medium mb-8 md:mb-14">
+          <p className="font-sans text-[15px] sm:text-2xl lg:text-[26px] text-white/80 max-w-[600px] leading-relaxed md:leading-snug font-normal md:font-medium mb-8 md:mb-10">
             We At Cloudfire Provide Framework Services Solutions To Clients
           </p>
 

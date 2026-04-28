@@ -3,12 +3,21 @@ import { Link, useLocation } from 'react-router-dom';
 
 const Header = () => {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
+  const [isScrolled, setIsScrolled] = useState(false);
   const { pathname } = useLocation();
 
   React.useEffect(() => {
+    const handleScroll = () => {
+      setIsScrolled(window.scrollY > 50);
+    };
+
+    window.addEventListener('scroll', handleScroll);
     const handleToggle = () => setIsMenuOpen(prev => !prev);
     window.addEventListener('toggleMobileMenu', handleToggle);
-    return () => window.removeEventListener('toggleMobileMenu', handleToggle);
+    return () => {
+      window.removeEventListener('scroll', handleScroll);
+      window.removeEventListener('toggleMobileMenu', handleToggle);
+    };
   }, []);
 
   const navItems = [
@@ -26,7 +35,7 @@ const Header = () => {
     <>
       <header className={`fixed rounded-xl md:absolute top-0 md:top-5 left-0 md:left-1/2 md:-translate-x-1/2 w-full md:w-[calc(100%-40px)] md:max-w-[1340px] h-20 flex items-center justify-between px-6 md:px-10 z-[1000] transition-all duration-300 ${
         pathname === '/' 
-          ? 'hidden md:flex bg-white shadow-xl' 
+          ? (isScrolled ? 'md:fixed md:top-2 md:bg-white md:shadow-xl' : 'hidden md:flex bg-transparent') 
           : 'flex bg-[#292929] md:bg-white shadow-xl'
       }`}>
         
@@ -38,7 +47,7 @@ const Header = () => {
             className="md:hidden w-[100px] h-auto object-contain" 
           />
           <img 
-            src="/Assests/Cloudfire.png" 
+            src={(pathname === '/' && !isScrolled) ? "/Assests/Cloudfire-white.png" : "/Assests/Cloudfire.png"}
             alt="Cloudfire Logo" 
             className="hidden md:block w-[90px] h-auto object-contain" 
           />
@@ -67,12 +76,14 @@ const Header = () => {
                 key={item.name}
                 to={item.path} 
                 className={`relative flex items-center h-full text-sm lg:text-[15px] font-medium transition-colors whitespace-nowrap ${
-                  isActive ? 'text-[#111111]' : 'text-[#333] hover:text-primary'
+                  isActive 
+                    ? (pathname === '/' && !isScrolled ? 'text-white' : 'text-[#111111]') 
+                    : (pathname === '/' && !isScrolled ? 'text-white/80 hover:text-white' : 'text-[#333] hover:text-primary')
                 }`}
               >
                 {item.name}
                 {isActive && (
-                  <span className="absolute bottom-4 inset-x-0 mx-auto h-0.5 w-full max-w-[20px] rounded-full bg-primary" />
+                  <span className={`absolute bottom-4 inset-x-0 mx-auto h-0.5 w-full max-w-[20px] rounded-full bg-primary`} />
                 )}
               </Link>
             );
@@ -81,7 +92,9 @@ const Header = () => {
 
         {/* Action Button / Hamburger */}
         <div className="flex items-center gap-4">
-          <Link to="/login" className="hidden md:block text-[#333] font-semibold text-sm lg:text-[15px] px-4 py-2.5 hover:text-primary transition-all">
+          <Link to="/login" className={`hidden md:block font-semibold text-sm lg:text-[15px] px-4 py-2.5 transition-all ${
+            (pathname === '/' && !isScrolled) ? 'text-white hover:text-white/80' : 'text-[#333] hover:text-primary'
+          }`}>
             Login
           </Link>
           <Link to="/contact" className="hidden md:block bg-primary text-white font-semibold text-sm lg:text-[15px] px-6 py-2.5 rounded-full hover:shadow-lg hover:shadow-primary/20 transition-all">
