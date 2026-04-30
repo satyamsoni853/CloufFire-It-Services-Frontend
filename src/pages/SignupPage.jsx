@@ -196,6 +196,35 @@ const SignupPage = () => {
             </div>
 
             <div className="relative group">
+              <select
+                name="work_status"
+                value={formData.work_status}
+                onChange={handleChange}
+                className="w-full bg-gray-50 border-2 border-transparent focus:border-[#ff7301] focus:bg-white rounded-2xl px-5 py-4 text-gray-900 transition-all outline-none placeholder:text-gray-400 font-medium font-sans appearance-none"
+              >
+                <option value="Fresher">Fresher</option>
+                <option value="Professional">Professional</option>
+                <option value="Student">Student</option>
+                <option value="Other">Other</option>
+              </select>
+              <span className="absolute right-5 top-1/2 -translate-y-1/2 text-gray-300 group-focus-within:text-[#ff7301] pointer-events-none transition-colors">
+                <svg
+                  className="w-5 h-5"
+                  fill="none"
+                  stroke="currentColor"
+                  viewBox="0 0 24 24"
+                >
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    strokeWidth="2"
+                    d="M19 9l-7 7-7-7"
+                  />
+                </svg>
+              </span>
+            </div>
+
+            <div className="relative group">
               <input
                 type={showPassword ? "text" : "password"}
                 name="password"
