@@ -42,13 +42,14 @@ const SignupPage = () => {
         body: JSON.stringify(payload),
       });
 
-      toast.success(data.message || "OTP sent to your email.");
-      navigate("/verify-otp", {
-        state: {
-          email: payload.email,
-          pending_token: data.pending_token,
-        },
-      });
+      toast.success(data.message || "Account created successfully!");
+      
+      // Save token and role for direct login
+      localStorage.setItem("token", data.access_token);
+      localStorage.setItem("role", data.role);
+      
+      // Redirect to dashboard
+      navigate("/dashboard");
     } catch (err) {
       console.error("Signup failed", err);
     } finally {

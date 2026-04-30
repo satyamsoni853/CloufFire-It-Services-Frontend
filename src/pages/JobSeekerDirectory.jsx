@@ -93,7 +93,7 @@ const JobSeekerDirectory = () => {
       <p className="text-xs font-bold text-gray-500 uppercase tracking-widest mb-3 flex items-center gap-2"><Icon size={14} /> {label}</p>
       <div className="space-y-2">
         {options.map(opt => (
-          <label key={opt} className="flex items-center gap-3 cursor-pointer group">
+          <label key={opt} className="flex items-center gap-3 cursor-pointer group" onClick={() => toggleArrayFilter(filterKey, opt)}>
             <div className={`w-4.5 h-4.5 rounded-md border-2 flex items-center justify-center transition-all ${
               filters[filterKey].includes(opt) ? 'bg-[#ff7301] border-[#ff7301]' : 'border-gray-300 group-hover:border-[#ff7301]'
             }`}>

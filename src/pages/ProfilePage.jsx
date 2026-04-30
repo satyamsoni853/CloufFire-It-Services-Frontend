@@ -26,8 +26,13 @@ const ProfilePage = () => {
     resume_url: '',
     profile_image_url: '',
     work_status: '',
-    location: 'Mumbai, India',
-    salary: 'Not disclosed',
+    location: '',
+    salary: '',
+    projects: '',
+    summary: '',
+    gender: '',
+    dob: '',
+    languages: '',
   });
   
   const [loading, setLoading] = useState(true);
@@ -181,10 +186,10 @@ const ProfilePage = () => {
                 </div>
                 <p className="text-gray-500 font-semibold text-lg mb-6">{profile.experience?.split('\n')[0] || 'Professional Job Seeker'}</p>
                 <div className="flex flex-wrap items-center justify-center md:justify-start gap-y-3 gap-x-8">
-                  <HeroStat icon="📍" label={profile.location} />
-                  <HeroStat icon="💼" label={profile.experience ? '1-3 Years' : 'Fresher'} />
-                  <HeroStat icon="💰" label={profile.salary} />
-                  <HeroStat icon="📞" label={profile.mobile || 'Add Phone'} />
+                  <HeroStat icon="📍" label={profile.location || 'Add Location'} onClick={() => scrollToSection('personal')} />
+                  <HeroStat icon="💼" label={profile.experience ? 'Experienced' : 'Fresher'} onClick={() => scrollToSection('employment')} />
+                  <HeroStat icon="💰" label={profile.salary || 'Add Salary'} onClick={() => scrollToSection('personal')} />
+                  <HeroStat icon="📞" label={profile.mobile || 'Add Phone'} onClick={() => scrollToSection('personal')} />
                 </div>
               </div>
               
@@ -382,6 +387,48 @@ const ProfilePage = () => {
           </SectionCard>
 
           <SectionCard 
+            id="projects" 
+            title="Projects" 
+            icon="🚀" 
+            ref={sectionRefs.projects}
+            onEdit={() => setEditSection('projects')}
+            isEditing={editSection === 'projects'}
+            value={profile.projects}
+            onSave={(val) => handleUpdate({ projects: val })}
+            onCancel={() => setEditSection(null)}
+          >
+            {profile.projects ? (
+              <div className="space-y-6">
+                {profile.projects.split('\n').map((project, i) => (
+                  <div key={i} className="p-6 bg-gray-50/50 rounded-3xl border border-gray-100">
+                    <p className="text-gray-800 font-bold">{project}</p>
+                  </div>
+                ))}
+              </div>
+            ) : (
+              <EmptyState message="Showcase your best work. Add projects that demonstrate your skills in action." />
+            )}
+          </SectionCard>
+
+          <SectionCard 
+            id="summary" 
+            title="Profile Summary" 
+            icon="📝" 
+            ref={sectionRefs.summary}
+            onEdit={() => setEditSection('summary')}
+            isEditing={editSection === 'summary'}
+            value={profile.summary}
+            onSave={(val) => handleUpdate({ summary: val })}
+            onCancel={() => setEditSection(null)}
+          >
+            {profile.summary ? (
+              <p className="text-gray-800 text-base leading-relaxed">{profile.summary}</p>
+            ) : (
+              <EmptyState message="A brief summary of your professional background and what you're looking for next." />
+            )}
+          </SectionCard>
+
+          <SectionCard 
             id="personal" 
             title="Personal Details" 
             icon="👤" 
@@ -395,11 +442,14 @@ const ProfilePage = () => {
           >
             <div className="grid grid-cols-1 md:grid-cols-2 gap-y-10 gap-x-16 p-2">
               <DetailItem label="Full Name" value={profile.full_name} />
-              <DetailItem label="Gender" value="Not Specified" />
-              <DetailItem label="Date of Birth" value="Not Specified" />
-              <DetailItem label="Work Status" value={profile.work_status || 'Add Status'} />
-              <DetailItem label="Languages" value="English, Hindi" />
+              <DetailItem label="Mobile" value={profile.mobile} />
+              <DetailItem label="Gender" value={profile.gender} />
+              <DetailItem label="Date of Birth" value={profile.dob} />
+              <DetailItem label="Work Status" value={profile.work_status} />
+              <DetailItem label="Languages" value={profile.languages} />
               <DetailItem label="Primary Email" value={profile.email} />
+              <DetailItem label="Location" value={profile.location} />
+              <DetailItem label="Salary/Expected" value={profile.salary} />
             </div>
           </SectionCard>
 
@@ -455,6 +505,12 @@ const SectionCard = React.forwardRef(({ id, title, icon, children, onEdit, isEdi
             {isPersonal ? (
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                 <InputGroup label="Full Name" defaultValue={profile.full_name} onChange={(e) => setLocalValue(prev => ({ ...prev, full_name: e.target.value }))} />
+                <InputGroup label="Mobile Number" defaultValue={profile.mobile} onChange={(e) => setLocalValue(prev => ({ ...prev, mobile: e.target.value }))} />
+                <InputGroup label="Location" defaultValue={profile.location} onChange={(e) => setLocalValue(prev => ({ ...prev, location: e.target.value }))} />
+                <InputGroup label="Salary (Current/Expected)" defaultValue={profile.salary} onChange={(e) => setLocalValue(prev => ({ ...prev, salary: e.target.value }))} />
+                <InputGroup label="Gender" defaultValue={profile.gender} onChange={(e) => setLocalValue(prev => ({ ...prev, gender: e.target.value }))} />
+                <InputGroup label="Date of Birth" defaultValue={profile.dob} onChange={(e) => setLocalValue(prev => ({ ...prev, dob: e.target.value }))} />
+                <InputGroup label="Languages" defaultValue={profile.languages} onChange={(e) => setLocalValue(prev => ({ ...prev, languages: e.target.value }))} />
                 <div className="space-y-2">
                   <label className="text-[10px] font-bold text-gray-400 uppercase tracking-widest ml-1">Work Status</label>
                   <select 
@@ -462,6 +518,7 @@ const SectionCard = React.forwardRef(({ id, title, icon, children, onEdit, isEdi
                     defaultValue={profile.work_status}
                     onChange={(e) => setLocalValue(prev => ({ ...prev, work_status: e.target.value }))}
                   >
+                    <option value="">Select Status</option>
                     <option value="Fresher">Fresher</option>
                     <option value="Experienced">Experienced</option>
                   </select>
@@ -496,8 +553,11 @@ const SectionCard = React.forwardRef(({ id, title, icon, children, onEdit, isEdi
   );
 });
 
-const HeroStat = ({ icon, label }) => (
-  <div className="flex items-center gap-3 bg-gray-50/80 px-5 py-3 rounded-2xl border border-gray-100 hover:border-orange-100 hover:bg-white transition-all shadow-sm group/stat">
+const HeroStat = ({ icon, label, onClick }) => (
+  <div 
+    onClick={onClick}
+    className={`flex items-center gap-3 bg-gray-50/80 px-5 py-3 rounded-2xl border border-gray-100 hover:border-orange-100 hover:bg-white transition-all shadow-sm group/stat ${onClick ? 'cursor-pointer' : ''}`}
+  >
     <span className="text-lg group-hover/stat:scale-125 transition-transform">{icon}</span>
     <span className="text-sm font-bold text-gray-600 group-hover/stat:text-gray-900 transition-colors">{label}</span>
   </div>

@@ -80,11 +80,13 @@ const JobsPage = () => {
       let matchesExp = true;
       if (filters.experience.length > 0) {
         const exp = job.experience_required?.toLowerCase() || '';
+        const expNumbers = exp.match(/\d+/g)?.map(Number) || [];
+        
         matchesExp = filters.experience.some(f => {
-          if (f === 'Fresher') return exp.includes('fresher') || exp.includes('0');
-          if (f === '1-3 years') return exp.includes('1') || exp.includes('2') || exp.includes('3');
-          if (f === '3-5 years') return exp.includes('3') || exp.includes('4') || exp.includes('5');
-          if (f === '5+ years') return exp.includes('5') || exp.includes('6') || exp.includes('7') || exp.includes('8') || exp.includes('10');
+          if (f === 'Fresher') return exp.includes('fresher') || expNumbers.includes(0);
+          if (f === '1-3 years') return expNumbers.some(n => n >= 1 && n <= 3);
+          if (f === '3-5 years') return expNumbers.some(n => n >= 3 && n <= 5);
+          if (f === '5+ years') return expNumbers.some(n => n >= 5);
           return false;
         });
       }
@@ -135,7 +137,7 @@ const JobsPage = () => {
       </p>
       <div className="space-y-2">
         {options.map(opt => (
-          <label key={opt} className="flex items-center gap-3 cursor-pointer group">
+          <label key={opt} className="flex items-center gap-3 cursor-pointer group" onClick={() => toggleArrayFilter(filterKey, opt)}>
             <div className={`w-4.5 h-4.5 rounded-md border-2 flex items-center justify-center transition-all ${
               filters[filterKey].includes(opt) ? 'bg-[#ff7301] border-[#ff7301]' : 'border-gray-300 group-hover:border-[#ff7301]'
             }`}>
