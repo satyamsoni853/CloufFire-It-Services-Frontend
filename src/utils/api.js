@@ -1,6 +1,8 @@
 import toast from 'react-hot-toast';
 
-const API_BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:8000';
+const RAW_API_URL = import.meta.env.VITE_API_URL || 'http://localhost:8000';
+// Ensure no trailing slash
+const API_BASE_URL = RAW_API_URL.endsWith('/') ? RAW_API_URL.slice(0, -1) : RAW_API_URL;
 
 export { API_BASE_URL };
 
@@ -53,6 +55,7 @@ export const apiRequest = async (endpoint, options = {}) => {
     return data;
   } catch (error) {
     if (error.message === 'Failed to fetch') {
+      console.error(`API Connection Error: Failed to fetch from ${API_BASE_URL}${endpoint}`);
       toast.error('Connection error. Please check if the backend is running.');
     }
     throw error;
