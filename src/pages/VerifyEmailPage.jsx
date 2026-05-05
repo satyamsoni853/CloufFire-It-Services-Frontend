@@ -2,6 +2,7 @@ import React, { useEffect, useState } from "react";
 import { useSearchParams, Link } from "react-router-dom";
 import { motion } from "framer-motion";
 import { apiRequest } from "../utils/api";
+import GlobalLoader from "../components/GlobalLoader";
 
 const VerifyEmailPage = () => {
   const [searchParams] = useSearchParams();
@@ -63,12 +64,7 @@ const VerifyEmailPage = () => {
         className="max-w-[450px] w-full bg-white rounded-2xl shadow-[0_8px_30px_rgb(0,0,0,0.04)] border border-gray-100 p-10 text-center"
       >
         {status.loading ? (
-          <div className="py-8">
-            <div className="w-12 h-12 border-4 border-gray-100 border-t-[#ff7301] rounded-full animate-spin mx-auto mb-4"></div>
-            <p className="text-gray-500 font-medium font-sans">
-              Verifying your account...
-            </p>
-          </div>
+          <GlobalLoader variant="compact" message="Verifying your Cloudfire account..." />
         ) : (
           <div>
             <div

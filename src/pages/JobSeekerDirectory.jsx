@@ -3,7 +3,8 @@ import { motion } from 'framer-motion';
 import { apiRequest } from '../utils/api';
 import toast from 'react-hot-toast';
 import UserProfileModal from '../components/UserProfileModal';
-import { Search, X, SlidersHorizontal, GraduationCap, Briefcase, Wrench, FileText, Users } from 'lucide-react';
+import { Search, X, SlidersHorizontal, GraduationCap, Briefcase, Wrench, FileText, Users, Phone, MessageSquare } from 'lucide-react';
+import GlobalLoader from '../components/GlobalLoader';
 
 const JobSeekerDirectory = () => {
   const [jobseekers, setJobseekers] = useState([]);
@@ -192,7 +193,7 @@ const JobSeekerDirectory = () => {
         {/* Candidate Cards */}
         <div className={showFilters ? 'lg:col-span-9' : ''}>
           {loading ? (
-            <div className="flex justify-center py-20"><div className="animate-spin rounded-full h-10 w-10 border-t-2 border-b-2 border-[#ff7301]"></div></div>
+            <GlobalLoader variant="compact" message="Loading Cloudfire candidates..." />
           ) : filteredSeekers.length === 0 ? (
             <div className="text-center py-20 bg-gray-50 rounded-[32px] border-2 border-dashed border-gray-200">
               <Users className="w-12 h-12 mx-auto text-gray-200 mb-4" />
@@ -228,25 +229,36 @@ const JobSeekerDirectory = () => {
                     </div>
                   </div>
 
-                  <div className="flex gap-2">
-                    <button onClick={() => setSelectedUser(seeker)}
-                      className="flex-1 bg-gray-100 text-gray-700 py-3 rounded-2xl text-xs font-bold hover:bg-gray-200 transition-all flex items-center justify-center gap-1.5 cursor-pointer">
-                      <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" /><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" /></svg>
-                      View
-                    </button>
-                    {seeker.resume_url ? (
-                      <a href={seeker.resume_url} target="_blank" rel="noreferrer"
-                        className="flex-1 bg-black text-white py-3 rounded-2xl text-xs font-bold hover:bg-gray-800 transition-all flex items-center justify-center gap-1.5">
-                        <FileText size={12}/> Resume
+                  <div className="space-y-3">
+                    <div className="flex gap-2">
+                      <a href={`tel:${seeker.mobile}`} 
+                        className="flex-1 bg-green-500 text-white py-3.5 rounded-2xl text-xs font-bold hover:bg-green-600 transition-all shadow-lg shadow-green-100 flex items-center justify-center gap-2">
+                        <Phone size={14}/> Call
                       </a>
-                    ) : (
-                      <button className="flex-1 bg-gray-100 text-gray-400 py-3 rounded-2xl text-xs font-bold cursor-not-allowed">No Resume</button>
-                    )}
-                    <button onClick={() => handleContact(seeker)}
-                      className="flex-1 bg-[#ff7301] text-white py-3 rounded-2xl text-xs font-bold hover:bg-orange-600 transition-all shadow-lg shadow-orange-200 cursor-pointer">
-                      Hire
-                    </button>
+                      <button onClick={() => handleContact(seeker)}
+                        className="flex-[1.2] bg-gradient-to-r from-[#ff7301] to-[#ff9845] text-white py-3.5 rounded-2xl text-xs font-bold hover:shadow-orange-200 hover:scale-[1.02] transition-all shadow-lg shadow-orange-100 flex items-center justify-center gap-2 cursor-pointer">
+                        <MessageSquare size={14}/> Message
+                      </button>
+                    </div>
+                    <div className="flex gap-2">
+                      <button onClick={() => setSelectedUser(seeker)}
+                        className="flex-1 bg-gray-50 text-gray-600 py-2.5 rounded-xl text-[11px] font-bold hover:bg-gray-100 transition-all flex items-center justify-center gap-1.5 cursor-pointer">
+                        <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" /><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" /></svg>
+                        View Profile
+                      </button>
+                      {seeker.resume_url ? (
+                        <a href={seeker.resume_url} target="_blank" rel="noreferrer"
+                          className="flex-1 bg-gray-900 text-white py-2.5 rounded-xl text-[11px] font-bold hover:bg-black transition-all flex items-center justify-center gap-1.5">
+                          <FileText size={12}/> View Resume
+                        </a>
+                      ) : (
+                        <div className="flex-1 bg-gray-50 text-gray-300 py-2.5 rounded-xl text-[10px] font-bold flex items-center justify-center gap-1.5 cursor-not-allowed border border-dashed border-gray-100">
+                          No Resume
+                        </div>
+                      )}
+                    </div>
                   </div>
+
                 </motion.div>
               ))}
             </div>

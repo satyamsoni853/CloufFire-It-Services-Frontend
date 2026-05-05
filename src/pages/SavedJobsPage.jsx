@@ -3,6 +3,7 @@ import { apiRequest } from '../utils/api';
 import { Briefcase, MapPin, DollarSign, Trash2, Clock } from 'lucide-react';
 import toast from 'react-hot-toast';
 import { Link } from 'react-router-dom';
+import GlobalLoader from '../components/GlobalLoader';
 
 const SavedJobsPage = () => {
   const [savedJobs, setSavedJobs] = useState([]);
@@ -34,7 +35,7 @@ const SavedJobsPage = () => {
   };
 
   if (loading) {
-    return <div className="flex justify-center items-center py-20"><div className="animate-spin rounded-full h-12 w-12 border-b-2 border-[#ff7301]"></div></div>;
+    return <GlobalLoader message="Loading your Cloudfire saved jobs..." />;
   }
 
   return (

@@ -1,7 +1,7 @@
 import React, { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { motion } from "framer-motion";
-import { apiRequest } from "../utils/api";
+import { apiRequest, saveAuthTokens } from "../utils/api";
 import toast from "react-hot-toast";
 
 const SignupPage = () => {
@@ -45,8 +45,7 @@ const SignupPage = () => {
       toast.success(data.message || "Account created successfully!");
       
       // Save token and role for direct login
-      localStorage.setItem("token", data.access_token);
-      localStorage.setItem("role", data.role);
+      saveAuthTokens(data);
       
       // Redirect to dashboard
       navigate("/dashboard");
@@ -285,6 +284,7 @@ const SignupPage = () => {
           >
             {loading ? "Creating account..." : "Create Account"}
           </button>
+
         </form>
 
         <p className="text-center mt-8 text-gray-500 text-sm font-sans">

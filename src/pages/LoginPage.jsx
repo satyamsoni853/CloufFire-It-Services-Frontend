@@ -1,7 +1,7 @@
 import React, { useState } from "react";
 import { Link, useNavigate, useLocation } from "react-router-dom";
 import { motion } from "framer-motion";
-import { apiRequest } from "../utils/api";
+import { apiRequest, saveAuthTokens } from "../utils/api";
 
 const LoginPage = () => {
   const [formData, setFormData] = useState({
@@ -30,8 +30,7 @@ const LoginPage = () => {
         body: JSON.stringify(formData),
       });
 
-      localStorage.setItem("token", data.access_token);
-      localStorage.setItem("role", data.role);
+      saveAuthTokens(data);
       navigate("/dashboard");
     } catch (err) {
       // apiRequest already toasted the error, but we can set local state if we want inline display
@@ -166,7 +165,6 @@ const LoginPage = () => {
             <div className="text-right">
               <Link
                 to="/forgot-password"
-                size="xs"
                 className="text-xs font-bold text-[#ff7301] hover:underline"
               >
                 Forgot Password?

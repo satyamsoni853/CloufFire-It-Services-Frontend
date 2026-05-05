@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from "react";
 import { useNavigate, useLocation, Link } from "react-router-dom";
 import { motion } from "framer-motion";
-import { apiRequest } from "../utils/api";
+import { apiRequest, saveAuthTokens } from "../utils/api";
 import toast from "react-hot-toast";
 
 const VerifyOtpPage = () => {
@@ -56,8 +56,7 @@ const VerifyOtpPage = () => {
         }),
       });
 
-      localStorage.setItem("token", data.access_token);
-      localStorage.setItem("role", data.role);
+      saveAuthTokens(data);
       toast.success(data.message || "Account created!");
       navigate("/dashboard");
     } catch (err) {

@@ -1,332 +1,658 @@
-import React, { useState, useEffect, useMemo } from 'react';
-import { Users, Briefcase, Building, CheckCircle, PieChart as PieChartIcon, TrendingUp, Activity, Search, X } from 'lucide-react';
-import { BarChart, Bar, LineChart, Line, PieChart, Pie, Cell, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from 'recharts';
-import { apiRequest } from '../utils/api';
+import React, { useEffect, useMemo, useState } from 'react';
+import {
+  Activity,
+  AlertCircle,
+  Briefcase,
+  Building2,
+  CheckCircle2,
+  History,
+  Layout,
+  Search,
+  Settings,
+  ShieldCheck,
+  Trash2,
+  UserCheck,
+  Users,
+  Phone,
+  MessageSquare,
+  GraduationCap,
+} from 'lucide-react';
+import {
+  Bar,
+  BarChart,
+  CartesianGrid,
+  Cell,
+  Line,
+  LineChart,
+  Pie,
+  PieChart,
+  ResponsiveContainer,
+  Tooltip,
+  XAxis,
+  YAxis,
+} from 'recharts';
 import toast from 'react-hot-toast';
+import { apiRequest } from '../utils/api';
 import UserProfileModal from '../components/UserProfileModal';
+import GlobalLoader from '../components/GlobalLoader';
 
-
+const chartColors = ['#9333ea', '#ff7301', '#2563eb', '#16a34a', '#dc2626'];
 
 const AdminDashboard = () => {
   const [stats, setStats] = useState(null);
   const [users, setUsers] = useState([]);
   const [jobs, setJobs] = useState([]);
+  const [auditLogs, setAuditLogs] = useState([]);
+  const [siteSettings, setSiteSettings] = useState([]);
   const [loading, setLoading] = useState(true);
   const [selectedUser, setSelectedUser] = useState(null);
-  const [adminSearch, setAdminSearch] = useState('');
-  const [adminStatusFilter, setAdminStatusFilter] = useState('');
+  const [activeTab, setActiveTab] = useState('overview');
+  const [search, setSearch] = useState('');
+  const [contactModal, setContactModal] = useState({ open: false, user: null });
+  const [contactMessage, setContactMessage] = useState('');
+  const [sendingContact, setSendingContact] = useState(false);
 
 
-  useEffect(() => {
-    const token = localStorage.getItem('token');
-    if (!token) { window.location.href = '/login'; return; }
-    
-    setLoading(true);
-    Promise.all([
+  const loadData = async () => {
+    const [dashboardStats, allUsers, allJobs, logs, settings] = await Promise.all([
       apiRequest('/dashboard/stats').catch(() => null),
       apiRequest('/admin/all-users').catch(() => []),
       apiRequest('/jobs').catch(() => []),
-    ]).then(([s, u, j]) => { 
-      setStats(s); 
-      setUsers(u); 
-      setJobs(j);
-      setLoading(false); 
-    }).catch(() => setLoading(false));
+      apiRequest('/admin/audit-logs').catch(() => []),
+      apiRequest('/admin/settings').catch(() => []),
+    ]);
+    setStats(dashboardStats);
+    setUsers(allUsers);
+    setJobs(allJobs);
+    setAuditLogs(logs);
+    setSiteSettings(settings);
+  };
+
+  useEffect(() => {
+    const token = localStorage.getItem('token');
+    if (!token) {
+      window.location.href = '/login';
+      return;
+    }
+
+    loadData().finally(() => setLoading(false));
   }, []);
 
+  const filteredUsers = useMemo(() => {
+    const q = search.toLowerCase();
+    return users.filter((user) => (
+      !q ||
+      user.full_name?.toLowerCase().includes(q) ||
+      user.email?.toLowerCase().includes(q) ||
+      user.role?.toLowerCase().includes(q) ||
+      user.skills?.toLowerCase().includes(q)
+    ));
+  }, [users, search]);
+
+  const filteredJobs = useMemo(() => {
+    const q = search.toLowerCase();
+    return jobs.filter((job) => (
+      !q ||
+      job.title?.toLowerCase().includes(q) ||
+      job.company?.toLowerCase().includes(q) ||
+      job.location?.toLowerCase().includes(q)
+    ));
+  }, [jobs, search]);
+
   const handleDeleteUser = async (userId) => {
-    if (!window.confirm("Are you sure you want to remove this user?")) return;
-    try {
-      await apiRequest(`/admin/users/${userId}`, { method: 'DELETE' });
-      toast.success("User removed successfully");
-      setUsers(users.filter(u => u.id !== userId));
-    } catch (err) {
-      // Error already toasted
-    }
+    if (!window.confirm('Are you sure you want to remove this user?')) return;
+    await apiRequest(`/admin/users/${userId}`, { method: 'DELETE' });
+    toast.success('User removed successfully');
+    setUsers((items) => items.filter((item) => item.id !== userId));
   };
 
   const handleDeleteJob = async (jobId) => {
-    if (!window.confirm("Are you sure you want to remove this job?")) return;
-    try {
-      await apiRequest(`/jobs/${jobId}`, { method: 'DELETE' });
-      toast.success("Job removed successfully");
-      setJobs(jobs.filter(j => j.id !== jobId));
-    } catch (err) {
-      // Error already toasted
-    }
+    if (!window.confirm('Are you sure you want to remove this job?')) return;
+    await apiRequest(`/jobs/${jobId}`, { method: 'DELETE' });
+    toast.success('Job removed successfully');
+    setJobs((items) => items.filter((item) => item.id !== jobId));
+    loadData();
   };
 
-  if (loading) return (
-    <div className="flex items-center justify-center h-[60vh]">
-      <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-purple-500"></div>
-    </div>
-  );
+  const handleVerifyEmployer = async (userId) => {
+    await apiRequest(`/admin/verify-employer/${userId}`, { method: 'POST' });
+    toast.success('Employer verified');
+    setUsers((items) => items.map((item) => item.id === userId ? { ...item, is_verified: true } : item));
+    loadData();
+  };
 
-  const jobseekers = users.filter(u => u.role === 'jobseeker');
-  const employers = users.filter(u => u.role === 'employer');
+  const handleApproveJob = async (jobId) => {
+    await apiRequest(`/admin/approve-job/${jobId}`, { method: 'POST' });
+    toast.success('Job approved');
+    setJobs((items) => items.map((item) => item.id === jobId ? { ...item, is_approved: true } : item));
+    loadData();
+  };
 
-  const StatCard = ({ label, value, Icon, bg, color }) => (
-    <div className={`${bg} rounded-3xl p-6 relative overflow-hidden group hover:scale-[1.02] transition-all duration-300 border border-${color.split('-')[1]}-100`}>
-      <div className="flex justify-between items-start mb-4">
-        <p className="text-xs font-bold uppercase tracking-widest text-gray-500">{label}</p>
-        <div className={`p-2 rounded-xl bg-white/50 ${color}`}><Icon size={20} /></div>
-      </div>
-      <p className={`text-4xl font-bold ${color}`}>{value}</p>
-    </div>
-  );
+  const handleUpdateSetting = async (key, value) => {
+    await apiRequest('/admin/settings', {
+      method: 'POST',
+      body: JSON.stringify({ key, value }),
+    });
+    toast.success('Setting updated');
+    loadData();
+  };
 
-  const UserTable = ({ title, data, type }) => (
-    <div className="mb-10">
-      <div className="flex justify-between items-center mb-6">
-        <div>
-          <h3 className="text-xl font-bold text-gray-900 font-serif">{title}</h3>
-          <p className="text-gray-400 text-sm mt-1">{data.length} registered {type}s</p>
-        </div>
-      </div>
-      
-      <div className="bg-white rounded-3xl border border-gray-100 shadow-sm overflow-hidden overflow-x-auto">
-        <table className="w-full text-left border-collapse min-w-[600px]">
-          <thead className="bg-gray-50/50 border-b border-gray-100">
-            <tr>
-              <th className="px-6 py-4 text-xs font-bold text-gray-400 uppercase tracking-widest">User Details</th>
-              <th className="px-6 py-4 text-xs font-bold text-gray-400 uppercase tracking-widest">Contact</th>
-              <th className="px-6 py-4 text-xs font-bold text-gray-400 uppercase tracking-widest">Status</th>
-              <th className="px-6 py-4 text-xs font-bold text-gray-400 uppercase tracking-widest text-right">Actions</th>
-            </tr>
-          </thead>
-          <tbody className="divide-y divide-gray-50">
-            {data.map((u) => (
-              <tr key={u.email} className="hover:bg-gray-50/50 transition-colors cursor-pointer" onClick={() => setSelectedUser(u)}>
-                <td className="px-6 py-4">
-                  <div className="flex items-center gap-3">
-                    <div className="w-10 h-10 rounded-xl bg-gray-100 overflow-hidden shrink-0">
-                      <img src={u.profile_image_url || `https://api.dicebear.com/7.x/avataaars/svg?seed=${u.full_name}`} alt="" />
-                    </div>
-                    <div>
-                      <div className="font-bold text-gray-900 hover:text-blue-600 transition-colors">{u.full_name}</div>
-                      <div className="text-xs text-gray-400 font-medium">{u.email}</div>
-                    </div>
-                  </div>
-                </td>
-                <td className="px-6 py-4">
-                  <div className="text-sm font-bold text-gray-700">{u.mobile || 'N/A'}</div>
-                </td>
-                <td className="px-6 py-4">
-                  <div className="flex items-center gap-2">
-                    <div className={`w-2 h-2 rounded-full ${u.is_active ? 'bg-green-500' : 'bg-gray-300'}`}></div>
-                    <span className="text-xs font-bold text-gray-600 uppercase">{u.is_active ? 'Active' : 'Pending'}</span>
-                  </div>
-                </td>
-                <td className="px-6 py-4 text-right">
-                  <div className="flex items-center justify-end gap-2">
-                    <button
-                      onClick={(e) => { e.stopPropagation(); setSelectedUser(u); }}
-                      className="text-xs font-bold uppercase tracking-widest px-3 py-1.5 rounded-lg border border-blue-100 text-blue-500 hover:bg-blue-50 transition-colors cursor-pointer"
-                    >
-                      View
-                    </button>
-                    <button 
-                      onClick={(e) => { e.stopPropagation(); handleDeleteUser(u.id); }}
-                      className="text-xs font-bold uppercase tracking-widest px-3 py-1.5 rounded-lg border border-red-100 text-red-500 hover:bg-red-50 transition-colors cursor-pointer"
-                    >
-                      Remove
-                    </button>
-                  </div>
-                </td>
-              </tr>
-            ))}
-            {data.length === 0 && (
-              <tr>
-                <td colSpan="4" className="px-6 py-8 text-center text-gray-400 italic">No {type}s found.</td>
-              </tr>
-            )}
-          </tbody>
-        </table>
-      </div>
-    </div>
-  );
+  const handleContact = (user) => {
+    setContactModal({ open: true, user });
+    setContactMessage(`Hi ${user.full_name},\n\nThis is the Cloudfire Admin team. We would like to connect with you regarding your account.\n\nBest regards.`);
+  };
 
-  // Mock data for graphs
-  const roleDistribution = [
-    { name: 'Job Seekers', value: stats?.total_jobseekers || 0, color: '#ff7301' },
-    { name: 'Employers', value: stats?.total_employers || 0, color: '#3b82f6' }
+  const handleSendContact = async () => {
+    if (!contactMessage.trim()) { toast.error('Please enter a message'); return; }
+    setSendingContact(true);
+    try {
+      const data = await apiRequest('/contact-seeker', {
+        method: 'POST',
+        body: JSON.stringify({ seeker_email: contactModal.user.email, message: contactMessage }),
+      });
+      toast.success(data.message);
+      setContactModal({ open: false, user: null });
+      setContactMessage('');
+    } catch (err) { console.error("Failed to contact user", err); }
+    finally { setSendingContact(false); }
+  };
+
+
+  const metrics = [
+    { label: 'Total users', value: stats?.total_users || 0, icon: Users, tone: 'text-purple-700', bg: 'bg-purple-50' },
+    { label: 'Total jobs', value: stats?.total_jobs || 0, icon: Briefcase, tone: 'text-[#ff7301]', bg: 'bg-orange-50' },
+    { label: 'Applications', value: stats?.total_applications || 0, icon: Activity, tone: 'text-blue-700', bg: 'bg-blue-50' },
+    { label: 'Pending review', value: (stats?.pending_jobs || 0) + (stats?.pending_employers || 0), icon: AlertCircle, tone: 'text-amber-700', bg: 'bg-amber-50' },
   ];
 
-  const growthData = [
-    { name: 'Jan', users: 10 }, { name: 'Feb', users: 15 }, { name: 'Mar', users: 20 },
-    { name: 'Apr', users: 28 }, { name: 'May', users: (stats?.total_users || 30) }
-  ];
-
-  const activityData = [
-    { name: 'Active', count: stats?.active_users || 0 },
-    { name: 'Inactive', count: (stats?.total_users || 0) - (stats?.active_users || 0) }
-  ];
+  if (loading) {
+    return <GlobalLoader message="Loading Cloudfire admin controls..." />;
+  }
 
   return (
-    <>
-      <div className="mb-10">
-        <h1 className="text-3xl sm:text-4xl font-bold text-gray-900 font-serif">
-          Admin <span className="text-purple-600">Control Center</span>
-        </h1>
-        <p className="text-gray-500 mt-2">Platform-wide analytics and user management.</p>
-      </div>
-
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5 mb-10">
-        <StatCard label="Total Users" value={stats?.total_users || 0} Icon={Users} bg="bg-purple-50" color="text-purple-600" />
-        <StatCard label="Job Seekers" value={stats?.total_jobseekers || 0} Icon={Briefcase} bg="bg-orange-50" color="text-[#ff7301]" />
-        <StatCard label="Employers" value={stats?.total_employers || 0} Icon={Building} bg="bg-blue-50" color="text-blue-600" />
-        <StatCard label="Active Status" value={stats?.active_users || 0} Icon={CheckCircle} bg="bg-green-50" color="text-green-600" />
-      </div>
-
-      {/* Graphs Section */}
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-10">
-        <div className="bg-white p-6 rounded-3xl border border-gray-100 shadow-sm">
-          <h3 className="text-lg font-bold text-gray-900 font-serif mb-4 flex items-center gap-2"><PieChartIcon className="text-purple-500" size={20}/> User Roles</h3>
-          <div className="h-64">
-            <ResponsiveContainer width="100%" height="100%">
-              <PieChart>
-                <Pie data={roleDistribution} cx="50%" cy="50%" innerRadius={60} outerRadius={80} paddingAngle={5} dataKey="value">
-                  {roleDistribution.map((entry, index) => (
-                    <Cell key={`cell-${index}`} fill={entry.color} />
-                  ))}
-                </Pie>
-                <Tooltip />
-              </PieChart>
-            </ResponsiveContainer>
+    <div className="space-y-6">
+      <section className="rounded-[28px] bg-white p-5 shadow-sm ring-1 ring-gray-100 sm:p-6 lg:p-8">
+        <div className="flex flex-col gap-5 lg:flex-row lg:items-center lg:justify-between">
+          <div>
+            <p className="text-xs font-bold uppercase tracking-widest text-gray-400">Platform control center</p>
+            <h1 className="mt-2 text-2xl font-bold text-gray-950 sm:text-3xl lg:text-4xl">
+              Admin <span className="text-purple-700">Dashboard</span>
+            </h1>
+            <p className="mt-2 max-w-2xl text-sm leading-6 text-gray-500 sm:text-base">
+              Live platform metrics, user management, job moderation, audit logs, and site settings.
+            </p>
           </div>
-          <div className="flex justify-center gap-4 mt-2">
-            {roleDistribution.map(r => (
-              <div key={r.name} className="flex items-center gap-2 text-sm text-gray-600 font-medium">
-                <span className="w-3 h-3 rounded-full" style={{backgroundColor: r.color}}></span> {r.name}
-              </div>
-            ))}
+          <div className="grid grid-cols-2 gap-2 sm:flex">
+            <MiniMetric label="Active" value={stats?.active_users || 0} />
+            <MiniMetric label="Employers" value={stats?.total_employers || 0} />
+            <MiniMetric label="Seekers" value={stats?.total_jobseekers || 0} />
           </div>
         </div>
+      </section>
 
-        <div className="bg-white p-6 rounded-3xl border border-gray-100 shadow-sm lg:col-span-2">
-          <h3 className="text-lg font-bold text-gray-900 font-serif mb-4 flex items-center gap-2"><TrendingUp className="text-[#ff7301]" size={20}/> Platform Growth</h3>
-          <div className="h-64">
+      <section className="grid grid-cols-1 gap-4 sm:grid-cols-2 xl:grid-cols-4">
+        {metrics.map((metric) => {
+          const Icon = metric.icon;
+          return (
+            <div key={metric.label} className="rounded-2xl bg-white p-5 shadow-sm ring-1 ring-gray-100">
+              <div className="flex items-start justify-between gap-4">
+                <div>
+                  <p className="text-xs font-bold uppercase tracking-widest text-gray-400">{metric.label}</p>
+                  <p className={`mt-3 text-3xl font-bold ${metric.tone}`}>{metric.value}</p>
+                </div>
+                <div className={`rounded-2xl p-3 ${metric.bg} ${metric.tone}`}>
+                  <Icon size={22} />
+                </div>
+              </div>
+            </div>
+          );
+        })}
+      </section>
+
+      <div className="overflow-x-auto border-b border-gray-100">
+        <div className="flex min-w-max gap-2">
+          {[
+            { id: 'overview', label: 'Overview', icon: Activity },
+            { id: 'seekers', label: 'Job Seekers', icon: GraduationCap },
+            { id: 'employers', label: 'Employers', icon: Building2 },
+            { id: 'jobs', label: 'Jobs', icon: Briefcase },
+            { id: 'logs', label: 'Audit Logs', icon: History },
+            { id: 'settings', label: 'Settings', icon: Settings },
+          ].map((tab) => {
+            const Icon = tab.icon;
+            return (
+              <button
+                key={tab.id}
+                onClick={() => setActiveTab(tab.id)}
+                className={`flex items-center gap-2 border-b-2 px-4 py-3 text-sm font-bold transition ${activeTab === tab.id ? 'border-purple-700 text-purple-700' : 'border-transparent text-gray-400 hover:text-gray-700'}`}
+              >
+                <Icon size={16} />
+                {tab.label}
+              </button>
+            );
+          })}
+        </div>
+      </div>
+
+      {activeTab === 'overview' && (
+        <Overview stats={stats} />
+      )}
+
+      {activeTab === 'seekers' && (
+        <UsersTab
+          title="Manage Job Seekers"
+          search={search}
+          setSearch={setSearch}
+          users={filteredUsers.filter(u => u.role === 'jobseeker')}
+          onView={setSelectedUser}
+          onDelete={handleDeleteUser}
+          onVerify={handleVerifyEmployer}
+          onContact={handleContact}
+        />
+      )}
+
+      {activeTab === 'employers' && (
+        <UsersTab
+          title="Manage Employers"
+          search={search}
+          setSearch={setSearch}
+          users={filteredUsers.filter(u => u.role === 'employer')}
+          onView={setSelectedUser}
+          onDelete={handleDeleteUser}
+          onVerify={handleVerifyEmployer}
+          onContact={handleContact}
+        />
+      )}
+
+      {activeTab === 'jobs' && (
+        <JobsTab
+          search={search}
+          setSearch={setSearch}
+          jobs={filteredJobs}
+          onApprove={handleApproveJob}
+          onDelete={handleDeleteJob}
+        />
+      )}
+
+      {activeTab === 'logs' && (
+        <LogsTab logs={auditLogs} />
+      )}
+
+      {activeTab === 'settings' && (
+        <SettingsTab settings={siteSettings} onSave={handleUpdateSetting} />
+      )}
+
+      {selectedUser && <UserProfileModal user={selectedUser} onClose={() => setSelectedUser(null)} />}
+
+      {/* Contact Modal */}
+      {contactModal.open && (
+        <div className="fixed inset-0 bg-black/50 z-[200] flex items-center justify-center p-4">
+          <div className="bg-white rounded-2xl w-full max-w-lg overflow-hidden shadow-2xl">
+            <div className="p-6 border-b border-gray-100 flex justify-between items-center bg-gray-50">
+              <div>
+                <h2 className="text-xl font-bold text-gray-900 font-serif">Contact {contactModal.user?.full_name}</h2>
+                <p className="text-sm text-gray-400 mt-1">{contactModal.user?.email}</p>
+              </div>
+              <button onClick={() => setContactModal({ open: false, user: null })} className="text-gray-400 hover:text-gray-600 cursor-pointer">
+                <X size={24} />
+              </button>
+            </div>
+            <div className="p-8">
+              <label className="block text-sm font-bold text-gray-700 mb-2">Your Message</label>
+              <textarea rows="6" value={contactMessage} onChange={(e) => setContactMessage(e.target.value)}
+                className="w-full px-4 py-3 rounded-xl border border-gray-200 focus:border-purple-700 focus:ring-2 focus:ring-purple-700/20 outline-none transition-all resize-none"
+                placeholder="Write a message to this user..."></textarea>
+              <p className="text-xs text-gray-400 mt-2">This message will be sent to the user's email along with your contact details.</p>
+              <div className="mt-6 flex justify-end space-x-4">
+                <button type="button" onClick={() => setContactModal({ open: false, user: null })}
+                  className="px-6 py-3 rounded-xl font-bold text-gray-500 hover:bg-gray-100 transition-all cursor-pointer">Cancel</button>
+                <button onClick={handleSendContact} disabled={sendingContact}
+                  className="bg-purple-700 text-white px-8 py-3 rounded-xl font-bold shadow-lg shadow-purple-200 hover:bg-purple-800 transition-all cursor-pointer disabled:opacity-50">
+                  {sendingContact ? 'Sending...' : 'Send Message'}
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+    </div>
+  );
+};
+
+const Overview = ({ stats }) => {
+  const roleDistribution = (stats?.role_distribution || []).filter((item) => item.value > 0);
+  const activityDistribution = stats?.activity_distribution || [];
+
+  return (
+    <div className="space-y-6">
+      <section className="grid grid-cols-1 gap-6 xl:grid-cols-3">
+        <div className="rounded-2xl bg-white p-5 shadow-sm ring-1 ring-gray-100 xl:col-span-2">
+          <h2 className="text-lg font-bold text-gray-950">Platform Activity</h2>
+          <p className="text-sm text-gray-500">Jobs, applications, and interviews from backend records.</p>
+          <div className="mt-4 h-72">
             <ResponsiveContainer width="100%" height="100%">
-              <LineChart data={growthData}>
-                <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#f3f4f6" />
-                <XAxis dataKey="name" axisLine={false} tickLine={false} tick={{fill: '#9ca3af', fontSize: 12}} />
-                <YAxis axisLine={false} tickLine={false} tick={{fill: '#9ca3af', fontSize: 12}} />
-                <Tooltip contentStyle={{borderRadius: '16px', border: 'none', boxShadow: '0 4px 6px -1px rgb(0 0 0 / 0.1)'}} />
-                <Line type="monotone" dataKey="users" stroke="#ff7301" strokeWidth={4} dot={{strokeWidth: 4, r: 4}} activeDot={{r: 8}} />
+              <LineChart data={stats?.platform_activity || []}>
+                <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#edf2f7" />
+                <XAxis dataKey="name" axisLine={false} tickLine={false} tick={{ fill: '#6b7280', fontSize: 12 }} />
+                <YAxis allowDecimals={false} axisLine={false} tickLine={false} tick={{ fill: '#6b7280', fontSize: 12 }} />
+                <Tooltip contentStyle={{ border: 'none', borderRadius: 12, boxShadow: '0 8px 30px rgba(15,23,42,0.12)' }} />
+                <Line type="monotone" dataKey="jobs" stroke="#ff7301" strokeWidth={3} dot={{ r: 4 }} />
+                <Line type="monotone" dataKey="applications" stroke="#2563eb" strokeWidth={3} dot={{ r: 4 }} />
+                <Line type="monotone" dataKey="interviews" stroke="#9333ea" strokeWidth={3} dot={{ r: 4 }} />
               </LineChart>
             </ResponsiveContainer>
           </div>
         </div>
 
-        <div className="bg-white p-6 rounded-3xl border border-gray-100 shadow-sm lg:col-span-3">
-          <h3 className="text-lg font-bold text-gray-900 font-serif mb-4 flex items-center gap-2"><Activity className="text-blue-500" size={20}/> User Activity Status</h3>
-          <div className="h-64">
+        <div className="rounded-2xl bg-white p-5 shadow-sm ring-1 ring-gray-100">
+          <h2 className="text-lg font-bold text-gray-950">Role Split</h2>
+          <p className="text-sm text-gray-500">Current user distribution.</p>
+          <div className="mt-4 h-56">
+            {roleDistribution.length > 0 ? (
+              <ResponsiveContainer width="100%" height="100%">
+                <PieChart>
+                  <Pie data={roleDistribution} dataKey="value" nameKey="name" innerRadius={55} outerRadius={82} paddingAngle={3}>
+                    {roleDistribution.map((_, index) => <Cell key={index} fill={chartColors[index % chartColors.length]} />)}
+                  </Pie>
+                  <Tooltip contentStyle={{ border: 'none', borderRadius: 12, boxShadow: '0 8px 30px rgba(15,23,42,0.12)' }} />
+                </PieChart>
+              </ResponsiveContainer>
+            ) : <EmptyBox text="No user data." />}
+          </div>
+        </div>
+      </section>
+
+      <section className="grid grid-cols-1 gap-6 xl:grid-cols-3">
+        <div className="rounded-2xl bg-white p-5 shadow-sm ring-1 ring-gray-100 xl:col-span-2">
+          <h2 className="text-lg font-bold text-gray-950">Top Job Skills</h2>
+          <p className="text-sm text-gray-500">Calculated from job skill requirements.</p>
+          <div className="mt-4 h-64">
             <ResponsiveContainer width="100%" height="100%">
-              <BarChart data={activityData} layout="vertical">
-                <CartesianGrid strokeDasharray="3 3" horizontal={false} stroke="#f3f4f6" />
-                <XAxis type="number" axisLine={false} tickLine={false} tick={{fill: '#9ca3af', fontSize: 12}} />
-                <YAxis dataKey="name" type="category" axisLine={false} tickLine={false} tick={{fill: '#4b5563', fontSize: 14, fontWeight: 'bold'}} width={80} />
-                <Tooltip cursor={{fill: '#f9fafb'}} contentStyle={{borderRadius: '16px', border: 'none', boxShadow: '0 4px 6px -1px rgb(0 0 0 / 0.1)'}} />
-                <Bar dataKey="count" fill="#8b5cf6" radius={[0, 10, 10, 0]} barSize={40} />
+              <BarChart data={stats?.top_job_skills || []}>
+                <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#edf2f7" />
+                <XAxis dataKey="name" axisLine={false} tickLine={false} tick={{ fill: '#6b7280', fontSize: 12 }} />
+                <YAxis allowDecimals={false} axisLine={false} tickLine={false} tick={{ fill: '#6b7280', fontSize: 12 }} />
+                <Tooltip cursor={{ fill: '#f8fafc' }} contentStyle={{ border: 'none', borderRadius: 12, boxShadow: '0 8px 30px rgba(15,23,42,0.12)' }} />
+                <Bar dataKey="count" fill="#9333ea" radius={[8, 8, 0, 0]} />
               </BarChart>
             </ResponsiveContainer>
           </div>
         </div>
-      </div>
 
-      {/* User Search & Filter Bar */}
-      <div className="bg-white rounded-2xl border border-gray-100 shadow-sm p-4 mb-6 flex flex-col sm:flex-row gap-3">
-        <div className="relative flex-1">
-          <Search className="w-5 h-5 absolute left-4 top-1/2 -translate-y-1/2 text-gray-400" />
-          <input type="text" value={adminSearch} onChange={(e) => setAdminSearch(e.target.value)}
-            placeholder="Search users by name, email, skills..."
-            className="w-full pl-12 pr-4 py-3 bg-gray-50 rounded-xl border-2 border-transparent focus:border-purple-500 focus:bg-white outline-none transition-all font-medium" />
+        <div className="rounded-2xl bg-gray-950 p-5 text-white shadow-sm">
+          <h2 className="text-lg font-bold">Moderation Queue</h2>
+          <div className="mt-5 space-y-3">
+            <DarkSignal icon={Briefcase} label="Pending jobs" value={stats?.pending_jobs || 0} />
+            <DarkSignal icon={Building2} label="Pending employers" value={stats?.pending_employers || 0} />
+            <DarkSignal icon={CheckCircle2} label="Approved jobs" value={stats?.approved_jobs || 0} />
+            <DarkSignal icon={Users} label="Inactive users" value={stats?.inactive_users || 0} />
+          </div>
         </div>
-        <select value={adminStatusFilter} onChange={(e) => setAdminStatusFilter(e.target.value)}
-          className="px-4 py-3 rounded-xl border border-gray-200 text-sm font-bold outline-none focus:border-purple-500 transition-all bg-white appearance-none">
-          <option value="">All Status</option>
-          <option value="active">Active</option>
-          <option value="pending">Pending</option>
-        </select>
-        {(adminSearch || adminStatusFilter) && (
-          <button onClick={() => { setAdminSearch(''); setAdminStatusFilter(''); }}
-            className="flex items-center gap-1.5 px-4 py-3 rounded-xl text-red-500 hover:bg-red-50 font-bold text-sm transition-all cursor-pointer">
-            <X size={14} /> Clear
-          </button>
-        )}
-      </div>
+      </section>
 
-      <div className="space-y-8">
-        <UserTable title="Job Seekers" data={jobseekers.filter(u => {
-          const q = adminSearch.toLowerCase();
-          const matchesSearch = !q || u.full_name?.toLowerCase().includes(q) || u.email?.toLowerCase().includes(q) || u.skills?.toLowerCase().includes(q);
-          const matchesStatus = !adminStatusFilter || (adminStatusFilter === 'active' ? u.is_active : !u.is_active);
-          return matchesSearch && matchesStatus;
-        })} type="job seeker" />
-        <UserTable title="Employers" data={employers.filter(u => {
-          const q = adminSearch.toLowerCase();
-          const matchesSearch = !q || u.full_name?.toLowerCase().includes(q) || u.email?.toLowerCase().includes(q);
-          const matchesStatus = !adminStatusFilter || (adminStatusFilter === 'active' ? u.is_active : !u.is_active);
-          return matchesSearch && matchesStatus;
-        })} type="employer" />
-        
-        <div className="mb-10">
-          <div className="flex justify-between items-center mb-6">
-            <div>
-              <h3 className="text-xl font-bold text-gray-900 font-serif">Active Job Postings</h3>
-              <p className="text-gray-400 text-sm mt-1">{jobs.length} jobs currently listed</p>
+      <section className="grid grid-cols-1 gap-6 xl:grid-cols-2">
+        <ListPanel title="Recent Users" empty="No users found.">
+          {(stats?.recent_users || []).map((user) => (
+            <div key={user.id || user.email} className="rounded-2xl border border-gray-100 p-4">
+              <div className="flex items-center justify-between gap-3">
+                <div className="min-w-0">
+                  <p className="truncate font-bold text-gray-950">{user.full_name}</p>
+                  <p className="truncate text-sm text-gray-500">{user.email}</p>
+                </div>
+                <span className="rounded-full bg-purple-50 px-2 py-1 text-[11px] font-bold capitalize text-purple-700">{user.role}</span>
+              </div>
             </div>
-          </div>
-          <div className="bg-white rounded-3xl border border-gray-100 shadow-sm overflow-hidden overflow-x-auto">
-            <table className="w-full text-left border-collapse min-w-[600px]">
-              <thead className="bg-gray-50/50 border-b border-gray-100">
-                <tr>
-                  <th className="px-6 py-4 text-xs font-bold text-gray-400 uppercase tracking-widest">Job Details</th>
-                  <th className="px-6 py-4 text-xs font-bold text-gray-400 uppercase tracking-widest">Company</th>
-                  <th className="px-6 py-4 text-xs font-bold text-gray-400 uppercase tracking-widest">Salary</th>
-                  <th className="px-6 py-4 text-xs font-bold text-gray-400 uppercase tracking-widest text-right">Actions</th>
-                </tr>
-              </thead>
-              <tbody className="divide-y divide-gray-50">
-                {jobs.map((job) => (
-                  <tr key={job.id} className="hover:bg-gray-50/50 transition-colors">
-                    <td className="px-6 py-4">
-                      <div>
-                        <div className="font-bold text-gray-900">{job.title}</div>
-                        <div className="text-xs text-gray-400 font-medium">{job.location} • {job.type}</div>
-                      </div>
-                    </td>
-                    <td className="px-6 py-4">
-                      <div className="text-sm font-bold text-gray-700">{job.company}</div>
-                    </td>
-                    <td className="px-6 py-4">
-                      <div className="text-sm font-bold text-[#ff7301]">{job.salary}</div>
-                    </td>
-                    <td className="px-6 py-4 text-right">
-                      <button 
-                        onClick={() => handleDeleteJob(job.id)}
-                        className="text-xs font-bold uppercase tracking-widest px-3 py-1.5 rounded-lg border border-red-100 text-red-500 hover:bg-red-50 transition-colors cursor-pointer"
-                      >
-                        Remove
-                      </button>
-                    </td>
-                  </tr>
-                ))}
-                {jobs.length === 0 && (
-                  <tr>
-                    <td colSpan="4" className="px-6 py-8 text-center text-gray-400 italic">No jobs posted yet.</td>
-                  </tr>
-                )}
-              </tbody>
-            </table>
-          </div>
+          ))}
+        </ListPanel>
+
+        <ListPanel title="Recent Jobs" empty="No jobs found.">
+          {(stats?.recent_jobs || []).map((job) => (
+            <div key={job.id} className="rounded-2xl border border-gray-100 p-4">
+              <div className="flex items-center justify-between gap-3">
+                <div className="min-w-0">
+                  <p className="truncate font-bold text-gray-950">{job.title}</p>
+                  <p className="truncate text-sm text-gray-500">{job.company} - {job.location}</p>
+                </div>
+                <span className={`rounded-full px-2 py-1 text-[11px] font-bold ${job.is_approved ? 'bg-green-50 text-green-700' : 'bg-amber-50 text-amber-700'}`}>
+                  {job.is_approved ? 'Approved' : 'Pending'}
+                </span>
+              </div>
+            </div>
+          ))}
+        </ListPanel>
+      </section>
+    </div>
+  );
+};
+
+const UsersTab = ({ title, search, setSearch, users, onView, onDelete, onVerify, onContact }) => (
+  <section className="rounded-2xl bg-white p-5 shadow-sm ring-1 ring-gray-100">
+    <div className="flex items-center justify-between mb-5">
+      <h2 className="text-lg font-bold text-gray-950">{title}</h2>
+      <span className="bg-purple-50 text-purple-700 px-3 py-1 rounded-full text-xs font-bold">{users.length} Total</span>
+    </div>
+    <SearchBox value={search} onChange={setSearch} placeholder="Search by name, email, skills..." />
+    <div className="mt-5 overflow-x-auto">
+      <table className="w-full min-w-[760px] text-left">
+        <thead>
+          <tr className="border-b border-gray-100 text-xs font-bold uppercase tracking-widest text-gray-400">
+            <th className="px-4 py-3">User</th>
+            <th className="px-4 py-3">Role</th>
+            <th className="px-4 py-3">Status</th>
+            <th className="px-4 py-3 text-right">Actions</th>
+          </tr>
+        </thead>
+        <tbody className="divide-y divide-gray-50">
+          {users.map((user) => (
+            <tr key={user.id || user.email} className="hover:bg-gray-50">
+              <td className="px-4 py-4">
+                <div className="flex items-center gap-3">
+                  <img src={user.profile_image_url || `https://api.dicebear.com/7.x/avataaars/svg?seed=${user.full_name}`} alt="" className="h-10 w-10 rounded-xl bg-gray-100 object-cover" />
+                  <div className="min-w-0">
+                    <p className="truncate font-bold text-gray-950">{user.full_name}</p>
+                    <p className="truncate text-xs text-gray-500">{user.email}</p>
+                  </div>
+                </div>
+              </td>
+              <td className="px-4 py-4">
+                <span className="rounded-full bg-purple-50 px-2 py-1 text-xs font-bold capitalize text-purple-700">{user.role}</span>
+              </td>
+              <td className="px-4 py-4">
+                <div className="flex flex-wrap gap-2">
+                  <span className={`rounded-full px-2 py-1 text-xs font-bold ${user.is_active ? 'bg-green-50 text-green-700' : 'bg-gray-100 text-gray-500'}`}>{user.is_active ? 'Active' : 'Inactive'}</span>
+                  {user.role === 'employer' && (
+                    <span className={`rounded-full px-2 py-1 text-xs font-bold ${user.is_verified ? 'bg-blue-50 text-blue-700' : 'bg-amber-50 text-amber-700'}`}>{user.is_verified ? 'Verified' : 'Unverified'}</span>
+                  )}
+                </div>
+              </td>
+              <td className="px-4 py-4">
+                <div className="flex justify-end gap-2">
+                  <IconButton label="View" onClick={() => onView(user)} icon={UserCheck} />
+                  {(user.role === 'jobseeker' || user.role === 'employer') && (
+                    <>
+                      {user.mobile && (
+                        <a href={`tel:${user.mobile}`} className="inline-flex items-center gap-1 rounded-lg px-3 py-2 text-xs font-bold transition bg-green-50 text-green-700 hover:bg-green-100">
+                          <Phone size={14} /> Call
+                        </a>
+                      )}
+                      <IconButton label="Message" onClick={() => onContact(user)} icon={MessageSquare} tone="blue" />
+                    </>
+                  )}
+                  {user.role === 'employer' && !user.is_verified && <IconButton label="Verify" onClick={() => onVerify(user.id)} icon={ShieldCheck} tone="blue" />}
+                  <IconButton label="Remove" onClick={() => onDelete(user.id)} icon={Trash2} tone="red" />
+                </div>
+              </td>
+            </tr>
+          ))}
+        </tbody>
+      </table>
+      {users.length === 0 && <EmptyBox text="No users match your search." />}
+    </div>
+  </section>
+);
+
+const JobsTab = ({ search, setSearch, jobs, onApprove, onDelete }) => (
+  <section className="rounded-2xl bg-white p-5 shadow-sm ring-1 ring-gray-100">
+    <SearchBox value={search} onChange={setSearch} placeholder="Search jobs by title, company, location" />
+    <div className="mt-5 overflow-x-auto">
+      <table className="w-full min-w-[720px] text-left">
+        <thead>
+          <tr className="border-b border-gray-100 text-xs font-bold uppercase tracking-widest text-gray-400">
+            <th className="px-4 py-3">Job</th>
+            <th className="px-4 py-3">Location</th>
+            <th className="px-4 py-3">Status</th>
+            <th className="px-4 py-3 text-right">Actions</th>
+          </tr>
+        </thead>
+        <tbody className="divide-y divide-gray-50">
+          {jobs.map((job) => (
+            <tr key={job.id} className="hover:bg-gray-50">
+              <td className="px-4 py-4">
+                <p className="font-bold text-gray-950">{job.title}</p>
+                <p className="text-xs text-gray-500">{job.company}</p>
+              </td>
+              <td className="px-4 py-4 text-sm font-semibold text-gray-600">{job.location}</td>
+              <td className="px-4 py-4">
+                <span className={`rounded-full px-2 py-1 text-xs font-bold ${job.is_approved ? 'bg-green-50 text-green-700' : 'bg-amber-50 text-amber-700'}`}>
+                  {job.is_approved ? 'Approved' : 'Pending'}
+                </span>
+              </td>
+              <td className="px-4 py-4">
+                <div className="flex justify-end gap-2">
+                  {!job.is_approved && <IconButton label="Approve" onClick={() => onApprove(job.id)} icon={CheckCircle2} tone="green" />}
+                  <IconButton label="Remove" onClick={() => onDelete(job.id)} icon={Trash2} tone="red" />
+                </div>
+              </td>
+            </tr>
+          ))}
+        </tbody>
+      </table>
+      {jobs.length === 0 && <EmptyBox text="No jobs match your search." />}
+    </div>
+  </section>
+);
+
+const LogsTab = ({ logs }) => (
+  <section className="rounded-2xl bg-white p-5 shadow-sm ring-1 ring-gray-100">
+    <h2 className="text-lg font-bold text-gray-950">Audit Logs</h2>
+    <div className="mt-5 overflow-x-auto">
+      <table className="w-full min-w-[720px] text-left">
+        <thead>
+          <tr className="border-b border-gray-100 text-xs font-bold uppercase tracking-widest text-gray-400">
+            <th className="px-4 py-3">Time</th>
+            <th className="px-4 py-3">Action</th>
+            <th className="px-4 py-3">Details</th>
+          </tr>
+        </thead>
+        <tbody className="divide-y divide-gray-50">
+          {logs.map((log) => (
+            <tr key={log.id}>
+              <td className="px-4 py-4 text-sm text-gray-500">{new Date(log.timestamp).toLocaleString()}</td>
+              <td className="px-4 py-4 text-sm font-bold text-purple-700">{log.action}</td>
+              <td className="px-4 py-4 text-sm text-gray-700">{log.details || '-'}</td>
+            </tr>
+          ))}
+        </tbody>
+      </table>
+      {logs.length === 0 && <EmptyBox text="No audit logs yet." />}
+    </div>
+  </section>
+);
+
+const SettingsTab = ({ settings, onSave }) => {
+  const values = Object.fromEntries((settings || []).map((item) => [item.key, item.value]));
+  return (
+    <section className="grid grid-cols-1 gap-6 lg:grid-cols-2">
+      <div className="rounded-2xl bg-white p-5 shadow-sm ring-1 ring-gray-100">
+        <h2 className="flex items-center gap-2 text-lg font-bold text-gray-950"><Layout size={20} /> Platform Content</h2>
+        <div className="mt-5 space-y-4">
+          <SettingInput label="Landing headline" settingKey="headline" value={values.headline || 'Cloudfire: Direct Access to Elite Talent'} onSave={onSave} />
+          <SettingInput label="Support email" settingKey="support_email" value={values.support_email || 'support@cloudfire.com'} onSave={onSave} />
+          <SettingInput label="Maintenance mode" settingKey="maintenance" value={values.maintenance || 'OFF'} onSave={onSave} />
         </div>
       </div>
-      {/* Profile Detail Modal */}
-      {selectedUser && (
-        <UserProfileModal user={selectedUser} onClose={() => setSelectedUser(null)} />
-      )}
-    </>
+      <div className="rounded-2xl bg-gray-950 p-5 text-white shadow-sm">
+        <h2 className="text-lg font-bold">Saved Settings</h2>
+        <div className="mt-5 space-y-3">
+          {(settings || []).length > 0 ? settings.map((item) => (
+            <div key={item.key} className="rounded-2xl bg-white/5 p-3">
+              <p className="text-xs font-bold uppercase tracking-widest text-gray-400">{item.key}</p>
+              <p className="mt-1 break-words text-sm font-semibold text-white">{item.value}</p>
+            </div>
+          )) : <p className="text-sm text-gray-300">No settings saved yet.</p>}
+        </div>
+      </div>
+    </section>
+  );
+};
+
+const SettingInput = ({ label, settingKey, value, onSave }) => {
+  const [localValue, setLocalValue] = useState(value);
+  useEffect(() => setLocalValue(value), [value]);
+
+  return (
+    <div>
+      <label className="text-xs font-bold uppercase tracking-widest text-gray-400">{label}</label>
+      <div className="mt-2 flex gap-2">
+        <input value={localValue} onChange={(event) => setLocalValue(event.target.value)} className="min-w-0 flex-1 rounded-xl border border-gray-100 bg-gray-50 px-4 py-3 text-sm font-semibold outline-none focus:border-purple-300 focus:bg-white" />
+        <button onClick={() => onSave(settingKey, localValue)} className="rounded-xl bg-purple-700 px-4 py-3 text-sm font-bold text-white transition hover:bg-purple-800">Save</button>
+      </div>
+    </div>
+  );
+};
+
+const SearchBox = ({ value, onChange, placeholder }) => (
+  <div className="relative">
+    <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-gray-400" />
+    <input value={value} onChange={(event) => onChange(event.target.value)} placeholder={placeholder} className="w-full rounded-xl border border-gray-100 bg-gray-50 py-3 pl-10 pr-4 text-sm font-semibold outline-none transition focus:border-purple-300 focus:bg-white" />
+  </div>
+);
+
+const MiniMetric = ({ label, value }) => (
+  <div className="rounded-2xl bg-gray-50 px-4 py-3 text-center">
+    <p className="text-xs font-bold uppercase tracking-widest text-gray-400">{label}</p>
+    <p className="mt-1 text-xl font-bold text-gray-950">{value}</p>
+  </div>
+);
+
+const IconButton = ({ label, onClick, icon: Icon, tone = 'gray' }) => {
+  const styles = {
+    gray: 'bg-gray-100 text-gray-700 hover:bg-gray-200',
+    blue: 'bg-blue-50 text-blue-700 hover:bg-blue-100',
+    green: 'bg-green-50 text-green-700 hover:bg-green-100',
+    red: 'bg-red-50 text-red-700 hover:bg-red-100',
+  };
+  return (
+    <button onClick={onClick} className={`inline-flex items-center gap-1 rounded-lg px-3 py-2 text-xs font-bold transition ${styles[tone]}`}>
+      <Icon size={14} />
+      {label}
+    </button>
+  );
+};
+
+const DarkSignal = ({ icon: Icon, label, value }) => (
+  <div className="flex items-center gap-3 rounded-2xl bg-white/5 p-3">
+    <Icon size={18} className="text-purple-300" />
+    <span className="min-w-0 flex-1 text-sm font-semibold text-gray-200">{label}</span>
+    <span className="text-lg font-bold text-white">{value}</span>
+  </div>
+);
+
+const EmptyBox = ({ text }) => (
+  <div className="flex min-h-32 items-center justify-center rounded-2xl bg-gray-50 p-5 text-center text-sm text-gray-500">
+    {text}
+  </div>
+);
+
+const ListPanel = ({ title, empty, children }) => {
+  const items = React.Children.toArray(children);
+  return (
+    <div className="rounded-2xl bg-white p-5 shadow-sm ring-1 ring-gray-100">
+      <h2 className="text-lg font-bold text-gray-950">{title}</h2>
+      <div className="mt-4 space-y-3">
+        {items.length > 0 ? items : <EmptyBox text={empty} />}
+      </div>
+    </div>
   );
 };
 

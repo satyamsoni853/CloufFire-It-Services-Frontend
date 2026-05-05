@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { apiRequest } from '../utils/api';
 import toast from 'react-hot-toast';
 import { Briefcase, Users, Trash2, Edit3, MapPin, Clock } from 'lucide-react';
+import GlobalLoader from '../components/GlobalLoader';
 
 const MyJobsPage = () => {
   const [jobs, setJobs] = useState([]);
@@ -33,7 +34,7 @@ const MyJobsPage = () => {
     }
   };
 
-  if (loading) return <div className="flex justify-center py-20"><div className="animate-spin rounded-full h-12 w-12 border-b-2 border-[#ff7301]"></div></div>;
+  if (loading) return <GlobalLoader message="Loading your Cloudfire job posts..." />;
 
   return (
     <div className="py-8">

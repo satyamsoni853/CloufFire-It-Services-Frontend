@@ -1,308 +1,565 @@
-import React, { useState, useEffect } from 'react';
-import { Users, FileText, Wrench, Building2, Search, PieChart as PieChartIcon, TrendingUp, BarChart as BarChartIcon } from 'lucide-react';
-import { BarChart, Bar, AreaChart, Area, PieChart, Pie, Cell, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from 'recharts';
-import { apiRequest } from '../utils/api';
-import toast from 'react-hot-toast';
-import UserProfileModal from '../components/UserProfileModal';
+import React, { useEffect, useMemo, useState } from "react";
+import { Link, useNavigate } from "react-router-dom";
+import {
+  Bell,
+  Briefcase,
+  CalendarClock,
+  CheckCircle2,
+  ChevronRight,
+  FileText,
+  Mail,
+  MapPin,
+  Search,
+  Users,
+} from "lucide-react";
+import {
+  Bar,
+  BarChart,
+  CartesianGrid,
+  Cell,
+  Line,
+  LineChart,
+  Pie,
+  PieChart,
+  ResponsiveContainer,
+  Tooltip,
+  XAxis,
+  YAxis,
+} from "recharts";
+import { apiRequest } from "../utils/api";
+import UserProfileModal from "../components/UserProfileModal";
+import GlobalLoader from "../components/GlobalLoader";
+
+const chartColors = ["#2563eb", "#16a34a", "#9333ea", "#ff7301", "#dc2626"];
+
+const formatDate = (value) => {
+  if (!value) return "N/A";
+  return new Intl.DateTimeFormat("en-IN", {
+    day: "2-digit",
+    month: "short",
+    hour: "2-digit",
+    minute: "2-digit",
+  }).format(new Date(value));
+};
 
 const EmployerDashboard = () => {
   const [stats, setStats] = useState(null);
   const [jobseekers, setJobseekers] = useState([]);
   const [profile, setProfile] = useState(null);
   const [loading, setLoading] = useState(true);
-  const [searchTerm, setSearchTerm] = useState('');
-  const [contactModal, setContactModal] = useState({ open: false, seeker: null });
-  const [contactMessage, setContactMessage] = useState('');
-  const [sendingContact, setSendingContact] = useState(false);
+  const [searchTerm, setSearchTerm] = useState("");
   const [selectedUser, setSelectedUser] = useState(null);
+  const navigate = useNavigate();
 
   useEffect(() => {
-    const token = localStorage.getItem('token');
-    if (!token) { window.location.href = '/login'; return; }
+    const token = localStorage.getItem("token");
+    if (!token) {
+      window.location.href = "/login";
+      return;
+    }
+
     Promise.all([
-      apiRequest('/dashboard/stats').catch(() => null),
-      apiRequest('/employer/jobseekers').catch(() => []),
-      apiRequest('/profile').catch(() => null),
-    ]).then(([s, j, p]) => { setStats(s); setJobseekers(j); setProfile(p); setLoading(false); })
+      apiRequest("/dashboard/stats").catch(() => null),
+      apiRequest("/employer/jobseekers").catch(() => []),
+      apiRequest("/profile").catch(() => null),
+    ])
+      .then(([dashboardStats, seekers, userProfile]) => {
+        setStats(dashboardStats);
+        setJobseekers(seekers);
+        setProfile(userProfile);
+        setLoading(false);
+      })
       .catch(() => setLoading(false));
   }, []);
 
-  const filteredSeekers = jobseekers.filter(s =>
-    s.full_name?.toLowerCase().includes(searchTerm.toLowerCase()) ||
-    s.skills?.toLowerCase().includes(searchTerm.toLowerCase())
+  const filteredSeekers = useMemo(() => {
+    const q = searchTerm.toLowerCase();
+    return jobseekers.filter(
+      (seeker) =>
+        !q ||
+        seeker.full_name?.toLowerCase().includes(q) ||
+        seeker.email?.toLowerCase().includes(q) ||
+        seeker.skills?.toLowerCase().includes(q) ||
+        seeker.location?.toLowerCase().includes(q),
+    );
+  }, [jobseekers, searchTerm]);
+
+  const firstName = profile?.full_name?.split(" ")[0] || "Employer";
+  const candidateStatus = (stats?.candidate_status || []).filter(
+    (item) => item.value > 0,
+  );
+  const applicationStatus = (stats?.application_status || []).filter(
+    (item) => item.value > 0,
   );
 
-  const handleContact = (seeker) => {
-    setContactModal({ open: true, seeker });
-    setContactMessage(`Hi ${seeker.full_name},\n\nI came across your profile on Cloudfire and would love to discuss a potential opportunity.\n\nBest regards,\n${profile?.full_name || 'Employer'}`);
-  };
+  const metrics = [
+    {
+      label: "Available talent",
+      value: stats?.available_talent || 0,
+      icon: Users,
+      tone: "text-blue-700",
+      bg: "bg-blue-50",
+    },
+    {
+      label: "Posted jobs",
+      value: stats?.posted_jobs || 0,
+      icon: Briefcase,
+      tone: "text-[#ff7301]",
+      bg: "bg-orange-50",
+    },
+    {
+      label: "Applications",
+      value: stats?.total_applications || 0,
+      icon: FileText,
+      tone: "text-green-700",
+      bg: "bg-green-50",
+    },
+    {
+      label: "Interviews",
+      value: stats?.upcoming_interviews_count || 0,
+      icon: CalendarClock,
+      tone: "text-purple-700",
+      bg: "bg-purple-50",
+    },
+  ];
 
-  const handleSendContact = async () => {
-    if (!contactMessage.trim()) { toast.error('Please enter a message'); return; }
-    setSendingContact(true);
-    try {
-      const data = await apiRequest('/contact-seeker', {
-        method: 'POST',
-        body: JSON.stringify({
-          seeker_email: contactModal.seeker.email,
-          message: contactMessage,
-        }),
-      });
-      toast.success(data.message);
-      setContactModal({ open: false, seeker: null });
-    } catch (err) {
-      console.error("Failed to contact", err);
-    } finally {
-      setSendingContact(false);
-    }
-  };
-
-  if (loading) return (
-    <div className="flex items-center justify-center h-[60vh]">
-      <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-[#ff7301]"></div>
-    </div>
-  );
-
-  const greeting = () => {
-    const h = new Date().getHours();
-    if (h < 12) return 'Good Morning';
-    if (h < 17) return 'Good Afternoon';
-    return 'Good Evening';
-  };
+  if (loading) {
+    return <GlobalLoader message="Loading your Cloudfire hiring dashboard..." />;
+  }
 
   return (
-    <>
-      {/* Hero */}
-      <div className="mb-10">
-        <p className="text-gray-400 font-semibold text-sm uppercase tracking-widest mb-1">{greeting()}</p>
-        <h1 className="text-3xl sm:text-4xl font-bold text-gray-900 font-serif">
-          Welcome, <span className="text-blue-600">{profile?.full_name?.split(' ')[0] || 'Employer'}</span>
-        </h1>
-        <p className="text-gray-500 mt-2">Find and hire pre-vetted talent for your organization.</p>
-      </div>
+    <div className="space-y-8">
+      <section className="relative overflow-hidden rounded-[40px] bg-gray-950 p-12 shadow-xl sm:p-16 lg:p-20 border border-white/5 my-6">
+        <div className="relative z-10 flex flex-col gap-10 lg:flex-row lg:items-center lg:justify-between">
+          <div className="min-w-0 max-w-2xl">
+            <h1 className="text-3xl font-bold text-white sm:text-4xl lg:text-5xl leading-tight">
+              Welcome, <br />
+              <span className="text-blue-400">{firstName}</span>
+            </h1>
+            <p className="mt-8 max-w-xl text-base leading-relaxed text-gray-400 sm:text-lg font-medium">
+              Live hiring data from your jobs, applications, interviews,
+              messages, and the candidate pool.
+            </p>
+          </div>
+          <div className="flex flex-wrap gap-4">
+            <Link
+              to="/dashboard/jobs/post"
+              className="group relative flex items-center justify-center gap-2 overflow-hidden rounded-2xl bg-blue-700 px-8 py-4 text-sm font-bold text-white transition-all hover:scale-105 active:scale-95 shadow-xl shadow-blue-900/20"
+            >
+              <Briefcase size={20} />
+              <span>Post Job</span>
+            </Link>
+            <Link
+              to="/dashboard/jobseekers"
+              className="flex items-center justify-center gap-2 rounded-2xl bg-white/10 px-8 py-4 text-sm font-bold text-white backdrop-blur-md transition-all hover:bg-white/20 hover:scale-105 active:scale-95 border border-white/10"
+            >
+              <Users size={20} />
+              <span>Browse Talent</span>
+            </Link>
+          </div>
+        </div>
+      </section>
 
-      {/* Stats */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5 mb-10">
-        {[
-          { label: 'Available Talent', value: stats?.available_talent || 0, color: 'text-blue-600', bg: 'bg-blue-50', Icon: Users },
-          { label: 'With Resume', value: stats?.talent_with_resume || 0, color: 'text-green-600', bg: 'bg-green-50', Icon: FileText },
-          { label: 'With Skills', value: stats?.talent_with_skills || 0, color: 'text-purple-600', bg: 'bg-purple-50', Icon: Wrench },
-          { label: 'Employers Active', value: stats?.total_employers || 0, color: 'text-orange-600', bg: 'bg-orange-50', Icon: Building2 },
-        ].map((s, i) => (
-          <div key={i} className={`${s.bg} rounded-3xl p-6 hover:scale-[1.02] transition-all duration-300`}>
-            <div className="flex items-center justify-between mb-3">
-              <p className="text-xs font-bold uppercase tracking-widest text-gray-500">{s.label}</p>
-              <div className={`p-2 rounded-xl bg-white/50 ${s.color}`}><s.Icon size={20} /></div>
+      <section className="grid grid-cols-1 gap-6 sm:grid-cols-2 xl:grid-cols-4">
+        {metrics.map((metric) => {
+          const Icon = metric.icon;
+          return (
+            <div
+              key={metric.label}
+              className="rounded-2xl bg-white p-5 shadow-sm ring-1 ring-gray-100"
+            >
+              <div className="flex items-start justify-between gap-4">
+                <div>
+                  <p className="text-xs font-bold uppercase tracking-widest text-gray-400">
+                    {metric.label}
+                  </p>
+                  <p className={`mt-3 text-3xl font-bold ${metric.tone}`}>
+                    {metric.value}
+                  </p>
+                </div>
+                <div className={`rounded-2xl p-3 ${metric.bg} ${metric.tone}`}>
+                  <Icon size={22} />
+                </div>
+              </div>
             </div>
-            <p className={`text-4xl font-bold ${s.color}`}>{s.value}</p>
-          </div>
-        ))}
-      </div>
+          );
+        })}
+      </section>
 
-      {/* Graphs Section */}
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-10">
-        <div className="bg-white p-6 rounded-3xl border border-gray-100 shadow-sm">
-          <h3 className="text-lg font-bold text-gray-900 font-serif mb-4 flex items-center gap-2"><PieChartIcon className="text-blue-500" size={20}/> Candidate Status</h3>
-          <div className="h-64">
+      <section className="grid grid-cols-1 gap-6 xl:grid-cols-3">
+        <div className="rounded-2xl bg-white p-5 shadow-sm ring-1 ring-gray-100 xl:col-span-2">
+          <h2 className="text-lg font-bold text-gray-950">Hiring Activity</h2>
+          <p className="text-sm text-gray-500">
+            Daily jobs posted and applications received.
+          </p>
+          <div className="mt-4 h-72">
             <ResponsiveContainer width="100%" height="100%">
-              <PieChart>
-                <Pie data={[
-                  { name: 'Fresher', value: jobseekers.filter(s => s.work_status?.toLowerCase() === 'fresher').length || 1, color: '#3b82f6' },
-                  { name: 'Experienced', value: jobseekers.filter(s => s.work_status?.toLowerCase() === 'experienced').length || 1, color: '#10b981' }
-                ]} cx="50%" cy="50%" innerRadius={60} outerRadius={80} paddingAngle={5} dataKey="value">
-                  <Cell fill="#3b82f6" />
-                  <Cell fill="#10b981" />
-                </Pie>
-                <Tooltip />
-              </PieChart>
+              <LineChart data={stats?.daily_activity || []}>
+                <CartesianGrid
+                  strokeDasharray="3 3"
+                  vertical={false}
+                  stroke="#edf2f7"
+                />
+                <XAxis
+                  dataKey="name"
+                  axisLine={false}
+                  tickLine={false}
+                  tick={{ fill: "#6b7280", fontSize: 12 }}
+                />
+                <YAxis
+                  allowDecimals={false}
+                  axisLine={false}
+                  tickLine={false}
+                  tick={{ fill: "#6b7280", fontSize: 12 }}
+                />
+                <Tooltip
+                  contentStyle={{
+                    border: "none",
+                    borderRadius: 12,
+                    boxShadow: "0 8px 30px rgba(15,23,42,0.12)",
+                  }}
+                />
+                <Line
+                  type="monotone"
+                  dataKey="applications"
+                  stroke="#2563eb"
+                  strokeWidth={3}
+                  dot={{ r: 4 }}
+                />
+                <Line
+                  type="monotone"
+                  dataKey="jobs"
+                  stroke="#ff7301"
+                  strokeWidth={3}
+                  dot={{ r: 4 }}
+                />
+              </LineChart>
             </ResponsiveContainer>
-          </div>
-          <div className="flex justify-center gap-4 mt-2">
-            <div className="flex items-center gap-2 text-sm text-gray-600 font-medium"><span className="w-3 h-3 rounded-full bg-blue-500"></span> Fresher</div>
-            <div className="flex items-center gap-2 text-sm text-gray-600 font-medium"><span className="w-3 h-3 rounded-full bg-green-500"></span> Experienced</div>
           </div>
         </div>
 
-        <div className="bg-white p-6 rounded-3xl border border-gray-100 shadow-sm lg:col-span-2">
-          <h3 className="text-lg font-bold text-gray-900 font-serif mb-4 flex items-center gap-2"><TrendingUp className="text-[#ff7301]" size={20}/> Job Views Overview</h3>
-          <div className="h-64">
-            <ResponsiveContainer width="100%" height="100%">
-              <AreaChart data={[
-                { name: 'Mon', views: 120 }, { name: 'Tue', views: 200 }, { name: 'Wed', views: 150 },
-                { name: 'Thu', views: 300 }, { name: 'Fri', views: 250 }, { name: 'Sat', views: 100 }, { name: 'Sun', views: 80 }
-              ]}>
-                <defs>
-                  <linearGradient id="colorViews" x1="0" y1="0" x2="0" y2="1">
-                    <stop offset="5%" stopColor="#3b82f6" stopOpacity={0.8}/>
-                    <stop offset="95%" stopColor="#3b82f6" stopOpacity={0}/>
-                  </linearGradient>
-                </defs>
-                <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#f3f4f6" />
-                <XAxis dataKey="name" axisLine={false} tickLine={false} tick={{fill: '#9ca3af', fontSize: 12}} />
-                <YAxis axisLine={false} tickLine={false} tick={{fill: '#9ca3af', fontSize: 12}} />
-                <Tooltip contentStyle={{borderRadius: '16px', border: 'none', boxShadow: '0 4px 6px -1px rgb(0 0 0 / 0.1)'}} />
-                <Area type="monotone" dataKey="views" stroke="#3b82f6" fillOpacity={1} fill="url(#colorViews)" />
-              </AreaChart>
-            </ResponsiveContainer>
+        <div className="rounded-2xl bg-white p-5 shadow-sm ring-1 ring-gray-100">
+          <h2 className="text-lg font-bold text-gray-950">Candidate Status</h2>
+          <p className="text-sm text-gray-500">
+            Talent pool work status split.
+          </p>
+          <div className="mt-4 h-56">
+            {candidateStatus.length > 0 ? (
+              <ResponsiveContainer width="100%" height="100%">
+                <PieChart>
+                  <Pie
+                    data={candidateStatus}
+                    dataKey="value"
+                    nameKey="name"
+                    innerRadius={55}
+                    outerRadius={82}
+                    paddingAngle={3}
+                  >
+                    {candidateStatus.map((_, index) => (
+                      <Cell
+                        key={index}
+                        fill={chartColors[index % chartColors.length]}
+                      />
+                    ))}
+                  </Pie>
+                  <Tooltip
+                    contentStyle={{
+                      border: "none",
+                      borderRadius: 12,
+                      boxShadow: "0 8px 30px rgba(15,23,42,0.12)",
+                    }}
+                  />
+                </PieChart>
+              </ResponsiveContainer>
+            ) : (
+              <EmptyBox text="No candidate status data." />
+            )}
           </div>
         </div>
+      </section>
 
-        <div className="bg-white p-6 rounded-3xl border border-gray-100 shadow-sm lg:col-span-3">
-          <h3 className="text-lg font-bold text-gray-900 font-serif mb-4 flex items-center gap-2"><BarChartIcon className="text-purple-500" size={20}/> Top Skills in Demand</h3>
-          <div className="h-64">
+      <section className="grid grid-cols-1 gap-6 xl:grid-cols-3">
+        <div className="rounded-2xl bg-white p-5 shadow-sm ring-1 ring-gray-100 xl:col-span-2">
+          <h2 className="text-lg font-bold text-gray-950">
+            Top Candidate Skills
+          </h2>
+          <p className="text-sm text-gray-500">
+            Calculated from all active job seeker profiles.
+          </p>
+          <div className="mt-4 h-64">
             <ResponsiveContainer width="100%" height="100%">
-              <BarChart data={[
-                { name: 'React', count: 45 }, { name: 'Node.js', count: 38 }, { name: 'Python', count: 52 },
-                { name: 'AWS', count: 30 }, { name: 'Docker', count: 25 }, { name: 'UI/UX', count: 20 }
-              ]}>
-                <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#f3f4f6" />
-                <XAxis dataKey="name" axisLine={false} tickLine={false} tick={{fill: '#9ca3af', fontSize: 12}} />
-                <YAxis axisLine={false} tickLine={false} tick={{fill: '#9ca3af', fontSize: 12}} />
-                <Tooltip cursor={{fill: '#f9fafb'}} contentStyle={{borderRadius: '16px', border: 'none', boxShadow: '0 4px 6px -1px rgb(0 0 0 / 0.1)'}} />
-                <Bar dataKey="count" fill="#8b5cf6" radius={[10, 10, 0, 0]} barSize={40} />
+              <BarChart data={stats?.top_candidate_skills || []}>
+                <CartesianGrid
+                  strokeDasharray="3 3"
+                  vertical={false}
+                  stroke="#edf2f7"
+                />
+                <XAxis
+                  dataKey="name"
+                  axisLine={false}
+                  tickLine={false}
+                  tick={{ fill: "#6b7280", fontSize: 12 }}
+                />
+                <YAxis
+                  allowDecimals={false}
+                  axisLine={false}
+                  tickLine={false}
+                  tick={{ fill: "#6b7280", fontSize: 12 }}
+                />
+                <Tooltip
+                  cursor={{ fill: "#f8fafc" }}
+                  contentStyle={{
+                    border: "none",
+                    borderRadius: 12,
+                    boxShadow: "0 8px 30px rgba(15,23,42,0.12)",
+                  }}
+                />
+                <Bar dataKey="count" fill="#9333ea" radius={[8, 8, 0, 0]} />
               </BarChart>
             </ResponsiveContainer>
           </div>
         </div>
-      </div>
 
-      {/* Talent Pool */}
-      <div className="bg-white rounded-3xl border border-gray-100 shadow-sm overflow-hidden mb-10">
-        <div className="p-8 border-b border-gray-100">
-          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-            <div>
-              <h3 className="text-2xl font-bold text-gray-900 font-serif">Talent Pool</h3>
-              <p className="text-gray-400 text-sm mt-1">{filteredSeekers.length} candidates available</p>
-            </div>
-            <div className="relative">
-              <Search className="w-5 h-5 absolute left-4 top-1/2 -translate-y-1/2 text-gray-400" />
-              <input
-                type="text"
-                placeholder="Search by name or skill..."
-                value={searchTerm}
-                onChange={(e) => setSearchTerm(e.target.value)}
-                className="pl-12 pr-6 py-3 bg-gray-50 rounded-2xl border-2 border-transparent focus:border-blue-500 focus:bg-white outline-none transition-all w-full sm:w-72 font-medium"
-              />
-            </div>
+        <div className="rounded-2xl bg-gray-950 p-5 text-white shadow-sm">
+          <h2 className="text-lg font-bold">Hiring Signals</h2>
+          <p className="text-sm text-gray-300">
+            Live account and workflow status.
+          </p>
+          <div className="mt-5 space-y-3">
+            <Signal
+              icon={CheckCircle2}
+              label="Approved jobs"
+              value={stats?.approved_jobs || 0}
+            />
+            <Signal
+              icon={Bell}
+              label="Pending jobs"
+              value={stats?.pending_jobs || 0}
+            />
+            <Signal
+              icon={Mail}
+              label="Unread messages"
+              value={stats?.unread_messages || 0}
+            />
+            <Signal
+              icon={FileText}
+              label="Candidates with resumes"
+              value={stats?.talent_with_resume || 0}
+            />
           </div>
         </div>
+      </section>
 
-        {filteredSeekers.length === 0 ? (
-          <div className="p-16 text-center">
-            <Search className="w-16 h-16 mx-auto text-gray-200 mb-4" />
-            <p className="text-gray-400 font-medium">No candidates found matching your search.</p>
-          </div>
-        ) : (
-          <div className="divide-y divide-gray-50">
-            {filteredSeekers.map((seeker) => (
-              <div key={seeker.email} className="p-6 sm:px-8 hover:bg-gray-50/50 transition-colors group">
-                <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-                  <div className="flex items-center gap-4 cursor-pointer" onClick={() => setSelectedUser(seeker)}>
-                    <div className="w-12 h-12 rounded-2xl bg-gray-100 overflow-hidden shrink-0 border border-gray-200 group-hover:ring-2 group-hover:ring-blue-500/30 transition-all">
-                      <img src={seeker.profile_image_url || `https://api.dicebear.com/7.x/avataaars/svg?seed=${seeker.full_name}`} alt="" className="w-full h-full object-cover" />
-                    </div>
-                    <div>
-                      <h4 className="font-bold text-gray-900 group-hover:text-blue-600 transition-colors">{seeker.full_name}</h4>
-                      <div className="flex items-center gap-2 mt-1">
-                        <span className="text-xs text-gray-400 font-medium">{seeker.email}</span>
-                        {seeker.work_status && (
-                          <span className="px-2 py-0.5 bg-orange-50 text-[#ff7301] rounded-full text-[10px] font-bold uppercase">{seeker.work_status}</span>
-                        )}
-                      </div>
-                    </div>
+      <section className="grid grid-cols-1 gap-6 xl:grid-cols-3">
+        <ListPanel
+          title="Recent Applications"
+          empty="No applications on your jobs yet."
+        >
+          {(stats?.recent_applications || []).map((item) => (
+            <button
+              key={item.id}
+              onClick={() => item.candidate && setSelectedUser(item.candidate)}
+              className="w-full rounded-2xl border border-gray-100 p-4 text-left transition hover:border-blue-200 hover:bg-blue-50/30"
+            >
+              <div className="flex items-start justify-between gap-3">
+                <div className="min-w-0">
+                  <p className="truncate font-bold text-gray-950">
+                    {item.candidate?.full_name || "Candidate"}
+                  </p>
+                  <p className="mt-1 truncate text-sm text-gray-500">
+                    {item.job_title}
+                  </p>
+                </div>
+                <span className="shrink-0 rounded-full bg-blue-50 px-2 py-1 text-[11px] font-bold text-blue-700">
+                  {item.status}
+                </span>
+              </div>
+              <p className="mt-3 text-xs text-gray-400">
+                Applied {formatDate(item.applied_at)}
+              </p>
+            </button>
+          ))}
+        </ListPanel>
+
+        <ListPanel title="Your Jobs" empty="Post a job to see it here.">
+          {(stats?.recent_jobs || []).map((job) => (
+            <Link
+              key={job.id}
+              to="/dashboard/my-jobs"
+              className="block rounded-2xl border border-gray-100 p-4 transition hover:border-orange-200 hover:bg-orange-50/30"
+            >
+              <div className="flex items-start justify-between gap-3">
+                <div className="min-w-0">
+                  <p className="truncate font-bold text-gray-950">
+                    {job.title}
+                  </p>
+                  <p className="mt-1 flex items-center gap-1 text-sm text-gray-500">
+                    <MapPin size={13} />
+                    {job.location}
+                  </p>
+                </div>
+                <span
+                  className={`shrink-0 rounded-full px-2 py-1 text-[11px] font-bold ${job.is_approved ? "bg-green-50 text-green-700" : "bg-amber-50 text-amber-700"}`}
+                >
+                  {job.is_approved ? "Approved" : "Pending"}
+                </span>
+              </div>
+              <p className="mt-3 text-xs font-semibold text-gray-500">
+                {job.application_count || 0} applications
+              </p>
+            </Link>
+          ))}
+        </ListPanel>
+
+        <div className="rounded-2xl bg-white p-5 shadow-sm ring-1 ring-gray-100">
+          <h2 className="text-lg font-bold text-gray-950">
+            Application Status
+          </h2>
+          <div className="mt-4 space-y-3">
+            {applicationStatus.length > 0 ? (
+              applicationStatus.map((item, index) => (
+                <div key={item.name}>
+                  <div className="mb-1 flex items-center justify-between text-sm">
+                    <span className="font-semibold text-gray-700">
+                      {item.name}
+                    </span>
+                    <span className="font-bold text-gray-950">
+                      {item.value}
+                    </span>
                   </div>
-                  <div className="flex items-center gap-2 sm:gap-3">
-                    <button
-                      onClick={() => setSelectedUser(seeker)}
-                      className="px-4 py-2 bg-gray-100 text-gray-700 rounded-xl text-xs font-bold hover:bg-gray-200 transition-all flex items-center gap-1.5 cursor-pointer"
-                    >
-                      <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" /><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" /></svg>
-                      View Profile
-                    </button>
-                    {seeker.resume_url && (
-                      <a href={seeker.resume_url} target="_blank" rel="noreferrer" className="px-4 py-2 bg-gray-100 text-gray-700 rounded-xl text-xs font-bold hover:bg-gray-200 transition-all flex items-center gap-1.5">
-                        <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" /></svg>
-                        Resume
-                      </a>
-                    )}
-                    <button 
-                      onClick={() => handleContact(seeker)}
-                      className="px-5 py-2 bg-blue-600 text-white rounded-xl text-xs font-bold hover:bg-blue-700 transition-all cursor-pointer"
-                    >
-                      Contact
-                    </button>
+                  <div className="h-2 rounded-full bg-gray-100">
+                    <div
+                      className="h-full rounded-full"
+                      style={{
+                        width: `${Math.min(item.value * 20, 100)}%`,
+                        backgroundColor:
+                          chartColors[index % chartColors.length],
+                      }}
+                    ></div>
                   </div>
                 </div>
-                {/* Skills row */}
-                {seeker.skills && (
-                  <div className="mt-3 flex flex-wrap gap-1.5 ml-16">
-                    {seeker.skills.split(',').slice(0, 6).map(skill => (
-                      <span key={skill} className="px-2.5 py-1 bg-blue-50 text-blue-600 rounded-lg text-[10px] font-bold uppercase tracking-wider">{skill.trim()}</span>
-                    ))}
+              ))
+            ) : (
+              <EmptyBox text="No application status data." />
+            )}
+          </div>
+        </div>
+      </section>
+
+      <section className="rounded-2xl bg-white p-5 shadow-sm ring-1 ring-gray-100">
+        <div className="mb-5 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+          <div>
+            <h2 className="text-lg font-bold text-gray-950">Talent Pool</h2>
+            <p className="text-sm text-gray-500">
+              {filteredSeekers.length} candidates match your current search.
+            </p>
+          </div>
+          <div className="relative w-full sm:w-80">
+            <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-gray-400" />
+            <input
+              value={searchTerm}
+              onChange={(event) => setSearchTerm(event.target.value)}
+              placeholder="Search name, skill, location"
+              className="w-full rounded-xl border border-gray-100 bg-gray-50 py-3 pl-10 pr-4 text-sm font-semibold outline-none transition focus:border-blue-300 focus:bg-white"
+            />
+          </div>
+        </div>
+        <div className="grid grid-cols-1 gap-4 lg:grid-cols-2">
+          {filteredSeekers.slice(0, 6).map((seeker) => (
+            <article
+              key={seeker.id || seeker.email}
+              className="rounded-2xl border border-gray-100 p-4"
+            >
+              <div className="flex items-start gap-4">
+                <img
+                  src={
+                    seeker.profile_image_url ||
+                    `https://api.dicebear.com/7.x/avataaars/svg?seed=${seeker.full_name}`
+                  }
+                  alt=""
+                  className="h-12 w-12 rounded-2xl bg-gray-100 object-cover"
+                />
+                <div className="min-w-0 flex-1">
+                  <p className="truncate font-bold text-gray-950">
+                    {seeker.full_name}
+                  </p>
+                  <p className="truncate text-sm text-gray-500">
+                    {seeker.email}
+                  </p>
+                  <div className="mt-2 flex flex-wrap gap-1.5">
+                    {(seeker.skills || "")
+                      .split(",")
+                      .filter(Boolean)
+                      .slice(0, 4)
+                      .map((skill) => (
+                        <span
+                          key={skill}
+                          className="rounded-full bg-blue-50 px-2 py-1 text-[11px] font-bold text-blue-700"
+                        >
+                          {skill.trim()}
+                        </span>
+                      ))}
                   </div>
-                )}
+                </div>
               </div>
-            ))}
-          </div>
-        )}
-      </div>
-
-      {/* CTA */}
-      <div className="bg-gradient-to-r from-blue-600 to-blue-700 rounded-3xl p-8 text-white flex flex-col sm:flex-row items-center justify-between gap-6">
-        <div>
-          <h3 className="text-xl font-bold font-serif mb-1">Need specific talent?</h3>
-          <p className="text-blue-200 text-sm">Post a job listing and let qualified candidates come to you.</p>
+              <div className="mt-4 flex gap-2">
+                <button
+                  onClick={() => setSelectedUser(seeker)}
+                  className="flex-1 rounded-xl bg-gray-100 px-3 py-2 text-xs font-bold text-gray-700 transition hover:bg-gray-200"
+                >
+                  View Profile
+                </button>
+                <button
+                  onClick={() =>
+                    navigate("/dashboard/messages", {
+                      state: { contact: seeker },
+                    })
+                  }
+                  className="flex-1 rounded-xl bg-blue-700 px-3 py-2 text-xs font-bold text-white transition hover:bg-blue-800"
+                >
+                  Message
+                </button>
+              </div>
+            </article>
+          ))}
         </div>
-        <a href="/dashboard/jobs/post" className="shrink-0 bg-white text-blue-700 px-8 py-3.5 rounded-2xl font-bold hover:bg-blue-50 transition-all shadow-lg">
-          Post a Job
-        </a>
-      </div>
+      </section>
 
-      {/* Contact Modal */}
-      {contactModal.open && (
-        <div className="fixed inset-0 bg-black/50 z-[200] flex items-center justify-center p-4">
-          <div className="bg-white rounded-2xl w-full max-w-lg overflow-hidden shadow-2xl">
-            <div className="p-6 border-b border-gray-100 flex justify-between items-center bg-gray-50">
-              <div>
-                <h2 className="text-xl font-bold text-gray-900">Contact {contactModal.seeker?.full_name}</h2>
-                <p className="text-sm text-gray-400 mt-1">{contactModal.seeker?.email}</p>
-              </div>
-              <button onClick={() => setContactModal({ open: false, seeker: null })} className="text-gray-400 hover:text-gray-600 cursor-pointer">
-                <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M6 18L18 6M6 6l12 12" />
-                </svg>
-              </button>
-            </div>
-            <div className="p-8">
-              <label className="block text-sm font-bold text-gray-700 mb-2">Your Message</label>
-              <textarea
-                rows="6"
-                value={contactMessage}
-                onChange={(e) => setContactMessage(e.target.value)}
-                className="w-full px-4 py-3 rounded-xl border border-gray-200 focus:border-blue-500 focus:ring-2 focus:ring-blue-500/20 outline-none transition-all resize-none"
-                placeholder="Write a message to this candidate..."
-              ></textarea>
-              <p className="text-xs text-gray-400 mt-2">An email will be sent to the candidate with your message and contact details.</p>
-              <div className="mt-6 flex justify-end space-x-4">
-                <button 
-                  onClick={() => setContactModal({ open: false, seeker: null })}
-                  className="px-6 py-3 rounded-xl font-bold text-gray-500 hover:bg-gray-100 transition-all cursor-pointer"
-                >Cancel</button>
-                <button 
-                  onClick={handleSendContact}
-                  disabled={sendingContact}
-                  className="bg-blue-600 text-white px-8 py-3 rounded-xl font-bold shadow-lg hover:bg-blue-700 transition-all cursor-pointer disabled:opacity-50"
-                >{sendingContact ? 'Sending...' : 'Send Message'}</button>
-              </div>
-            </div>
-          </div>
-        </div>
-      )}
-      {/* Profile Detail Modal */}
       {selectedUser && (
-        <UserProfileModal user={selectedUser} onClose={() => setSelectedUser(null)} />
+        <UserProfileModal
+          user={selectedUser}
+          onClose={() => setSelectedUser(null)}
+        />
       )}
-    </>
+    </div>
+  );
+};
+
+const Signal = ({ icon: Icon, label, value }) => (
+  <div className="flex items-center gap-3 rounded-2xl bg-white/5 p-3">
+    <Icon size={18} className="text-blue-300" />
+    <span className="min-w-0 flex-1 text-sm font-semibold text-gray-200">
+      {label}
+    </span>
+    <span className="text-lg font-bold text-white">{value}</span>
+  </div>
+);
+
+const EmptyBox = ({ text }) => (
+  <div className="flex h-full min-h-32 items-center justify-center rounded-2xl bg-gray-50 p-5 text-center text-sm text-gray-500">
+    {text}
+  </div>
+);
+
+const ListPanel = ({ title, empty, children }) => {
+  const items = React.Children.toArray(children);
+  return (
+    <div className="rounded-2xl bg-white p-5 shadow-sm ring-1 ring-gray-100">
+      <h2 className="text-lg font-bold text-gray-950">{title}</h2>
+      <div className="mt-4 space-y-3">
+        {items.length > 0 ? items : <EmptyBox text={empty} />}
+      </div>
+    </div>
   );
 };
 
