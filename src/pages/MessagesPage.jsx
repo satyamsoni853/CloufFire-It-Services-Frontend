@@ -2,11 +2,15 @@ import React, { useState, useEffect, useRef } from 'react';
 import { apiRequest } from '../utils/api';
 import { Send, Search, MoreVertical, Phone, Video, Info, User, Check, CheckCheck } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
+import { useLocation } from 'react-router-dom';
 import GlobalLoader from '../components/GlobalLoader';
 
 const MessagesPage = () => {
-  const [contacts, setContacts] = useState([]);
-  const [activeContact, setActiveContact] = useState(null);
+  const location = useLocation();
+  const initialContact = location.state?.contact || null;
+  
+  const [contacts, setContacts] = useState(initialContact ? [initialContact] : []);
+  const [activeContact, setActiveContact] = useState(initialContact);
   const [messages, setMessages] = useState([]);
   const [newMessage, setNewMessage] = useState('');
   const [loading, setLoading] = useState(true);
@@ -32,9 +36,19 @@ const MessagesPage = () => {
   const fetchContacts = async () => {
     try {
       const data = await apiRequest('/chat-contacts');
-      setContacts(data);
-      if (data.length > 0 && !activeContact) {
-        setActiveContact(data[0]);
+      if (initialContact) {
+        const exists = data.find(c => c.id === initialContact.id || c.email === initialContact.email);
+        if (!exists) {
+          setContacts([initialContact, ...data]);
+        } else {
+          setContacts(data);
+          setActiveContact(exists);
+        }
+      } else {
+        setContacts(data);
+        if (data.length > 0 && !activeContact) {
+          setActiveContact(data[0]);
+        }
       }
     } catch (err) {
       console.error(err);
@@ -144,9 +158,9 @@ const MessagesPage = () => {
             {/* Chat Header */}
             <div className="px-10 py-5 border-b border-gray-50 flex items-center justify-between">
               <div className="flex items-center gap-4">
-                <div className="w-10 h-10 rounded-2xl bg-gray-50 flex items-center justify-center border border-gray-100">
+                <div className="w-10 h-10 rounded-xl bg-gray-50 flex items-center justify-center border border-gray-100">
                   {activeContact.profile_image_url ? (
-                    <img src={activeContact.profile_image_url} alt="" className="w-full h-full object-cover rounded-2xl" />
+                    <img src={activeContact.profile_image_url} alt="" className="w-full h-full object-cover rounded-xl" />
                   ) : (
                     <User size={16} className="text-gray-400" />
                   )}
@@ -159,9 +173,15 @@ const MessagesPage = () => {
                   </div>
                 </div>
               </div>
-              <div className="flex items-center gap-2">
-                <button className="p-2.5 text-gray-400 hover:text-gray-900 transition-all cursor-pointer"><Phone size={18} /></button>
-                <button className="p-2.5 text-gray-400 hover:text-gray-900 transition-all cursor-pointer"><Video size={18} /></button>
+              <div className="flex items-center gap-3">
+                {activeContact.mobile ? (
+                  <a href={`tel:${activeContact.mobile}`} className="flex items-center gap-2 px-4 py-2 bg-gray-50 hover:bg-gray-100 border border-gray-100 rounded-xl transition-all text-xs font-bold text-gray-700">
+                    <Phone size={14} className="text-gray-400" />
+                    <span>{activeContact.mobile}</span>
+                  </a>
+                ) : (
+                  <span className="text-xs font-medium text-gray-400 italic px-2">No phone number</span>
+                )}
                 <button className="p-2.5 text-gray-400 hover:text-gray-900 transition-all cursor-pointer"><MoreVertical size={18} /></button>
               </div>
             </div>

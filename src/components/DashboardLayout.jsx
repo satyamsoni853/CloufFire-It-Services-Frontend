@@ -1,6 +1,7 @@
 import React, { useState, useEffect, useMemo } from "react";
 import { Link, useLocation, Outlet } from "react-router-dom";
 import { motion, AnimatePresence } from "framer-motion";
+import "../style/Dashboard.css";
 import { apiRequest, clearAuthTokens } from "../utils/api";
 import {
   Menu,
@@ -76,28 +77,32 @@ const DashboardLayout = ({ children }) => {
         path: "/dashboard/jobseekers",
         icon: "M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z",
       });
-      if (role === "employer") {
-        items.push({
-          label: "Applicant Tracking",
-          path: "/dashboard/ats",
-          icon: "M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-3 7h3m-3 4h3m-6-4h.01M9 16h.01",
-        });
-        items.push({
-          label: "Job Templates",
-          path: "/dashboard/templates",
-          icon: "M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10",
-        });
-        items.push({
-          label: "My Posted Jobs",
-          path: "/dashboard/my-jobs",
-          icon: "M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4",
-        });
-        items.push({
-          label: "Plans & Billing",
-          path: "/dashboard/pricing",
-          icon: "M3 10h18M7 15h1m4 0h1m-7 4h12a3 3 0 003-3V8a3 3 0 00-3-3H6a3 3 0 00-3 3v8a3 3 0 003 3z",
-        });
-      }
+    }
+
+    if (role === "employer") {
+      items.push({
+        label: "Applicant Tracking",
+        path: "/dashboard/ats",
+        icon: "M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-3 7h3m-3 4h3m-6-4h.01M9 16h.01",
+      });
+      items.push({
+        label: "Job Templates",
+        path: "/dashboard/templates",
+        icon: "M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10",
+      });
+      items.push({
+        label: "My Posted Jobs",
+        path: "/dashboard/my-jobs",
+        icon: "M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4",
+      });
+      items.push({
+        label: "Plans & Billing",
+        path: "/dashboard/pricing",
+        icon: "M3 10h18M7 15h1m4 0h1m-7 4h12a3 3 0 003-3V8a3 3 0 00-3-3H6a3 3 0 00-3 3v8a3 3 0 003 3z",
+      });
+    }
+
+    if (role === "employer" || role === "admin") {
       items.push({
         label: "Talent Marketplace",
         path: "/dashboard/marketplace",
@@ -165,7 +170,7 @@ const DashboardLayout = ({ children }) => {
 
   const handleLogout = () => {
     clearAuthTokens();
-    window.location.href = "/login";
+    window.location.href = "/";
   };
 
   return (
@@ -215,7 +220,7 @@ const DashboardLayout = ({ children }) => {
                 <li key={item.label} className="w-full px-4">
                   <Link
                     to={item.path}
-                    className={`flex items-center px-6 transition-all group font-sans font-semibold text-[15px] leading-[52px] h-[52px] cursor-pointer w-full rounded-3xl ${isActive ? "bg-[#ff7301] text-white shadow-lg shadow-orange-900/10" : "text-gray-400 hover:text-white hover:bg-white/5"}`}
+                    className={`flex items-center px-6 transition-all group font-sans font-semibold text-[15px] leading-[52px] h-[52px] cursor-pointer w-full rounded-xl ${isActive ? "bg-[#ff7301] text-white shadow-lg shadow-orange-900/10" : "text-gray-400 hover:text-white hover:bg-white/5"}`}
                   >
                     <svg
                       className={`w-5 h-5 mr-4 shrink-0 transition-transform group-hover:scale-105 ${isActive ? "text-white" : "text-gray-500 group-hover:text-[#ff7301]"}`}
@@ -241,7 +246,7 @@ const DashboardLayout = ({ children }) => {
         <div className="p-6 border-t border-white/5">
           <button
             onClick={handleLogout}
-            className="flex items-center w-full px-6 h-[52px] text-gray-500 hover:text-white hover:bg-red-500/5 transition-all font-sans font-semibold text-[15px] rounded-3xl group"
+            className="flex items-center w-full px-6 h-[52px] text-gray-500 hover:text-white hover:bg-red-500/5 transition-all font-sans font-semibold text-[15px] rounded-xl group"
           >
             <LogOut
               size={18}
@@ -279,7 +284,7 @@ const DashboardLayout = ({ children }) => {
             <div className="relative">
               <button
                 onClick={() => setIsNotifyOpen(!isNotifyOpen)}
-                className={`relative p-2.5 rounded-2xl transition-all ${isNotifyOpen ? "bg-gray-100 text-[#ff7301]" : "text-gray-400 hover:bg-gray-50"}`}
+                className={`relative p-2.5 rounded-xl transition-all ${isNotifyOpen ? "bg-gray-100 text-[#ff7301]" : "text-gray-400 hover:bg-gray-50"}`}
               >
                 <Bell size={22} />
                 {notifications.length > 0 && (
@@ -295,7 +300,7 @@ const DashboardLayout = ({ children }) => {
                     initial={{ opacity: 0, y: 10, scale: 0.95 }}
                     animate={{ opacity: 1, y: 0, scale: 1 }}
                     exit={{ opacity: 0, y: 10, scale: 0.95 }}
-                    className="absolute right-0 mt-4 w-80 bg-white rounded-[28px] shadow-2xl border border-gray-100 py-6 z-[100] origin-top-right overflow-hidden"
+                    className="absolute right-0 mt-4 w-80 bg-white rounded-xl shadow-2xl border border-gray-100 py-6 z-[100] origin-top-right overflow-hidden"
                   >
                     <div className="flex justify-between items-center px-8 pb-4 border-b border-gray-50">
                       <h4 className="text-xs font-semibold text-gray-900 uppercase tracking-widest">
@@ -341,10 +346,11 @@ const DashboardLayout = ({ children }) => {
             <div className="relative">
               <button
                 onClick={() => setIsUserMenuOpen(!isUserMenuOpen)}
-                className={`flex items-center space-x-4 p-2 pl-2 pr-4 rounded-2xl transition-all border ${isUserMenuOpen ? "bg-gray-100 border-gray-200" : "border-transparent hover:bg-gray-50 hover:border-gray-100"}`}
+                className={`flex items-center space-x-4 p-2 pl-2 pr-4 rounded-xl transition-all border ${isUserMenuOpen ? "bg-gray-100 border-gray-200" : "border-transparent hover:bg-gray-50 hover:border-gray-100"}`}
               >
-                <div className="w-10 h-10 sm:w-11 sm:h-11 rounded-2xl bg-gray-100 overflow-hidden shrink-0 border-2 border-white shadow-md">
+                <div className="w-10 h-10 sm:w-11 sm:h-11 rounded-xl bg-gray-100 overflow-hidden shrink-0 border-2 border-white shadow-md">
                   <img
+                    className="w-full h-full object-cover"
                     src={
                       userData?.profile_image_url ||
                       `https://api.dicebear.com/7.x/avataaars/svg?seed=${userData?.full_name || "User"}`
@@ -374,7 +380,7 @@ const DashboardLayout = ({ children }) => {
                     initial={{ opacity: 0, y: 10, scale: 0.95 }}
                     animate={{ opacity: 1, y: 0, scale: 1 }}
                     exit={{ opacity: 0, y: 10, scale: 0.95 }}
-                    className="absolute right-0 mt-4 w-56 bg-white rounded-[28px] shadow-2xl border border-gray-100 py-3 z-[100] origin-top-right overflow-hidden"
+                    className="absolute right-0 mt-4 w-56 bg-white rounded-xl shadow-2xl border border-gray-100 py-3 z-[100] origin-top-right overflow-hidden"
                   >
                     <Link
                       to="/dashboard/profile"
@@ -399,7 +405,7 @@ const DashboardLayout = ({ children }) => {
         </header>
 
         {/* Dashboard Content */}
-        <div className="mx-auto max-w-[1320px] px-4 py-6 sm:px-6 lg:px-8 lg:py-8">
+        <div className="dashboard-wrapper mx-auto max-w-[1500px] px-4 py-6 sm:px-6 lg:px-8 lg:py-8">
           <Outlet />
         </div>
       </main>

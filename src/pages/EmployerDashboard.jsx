@@ -124,60 +124,64 @@ const EmployerDashboard = () => {
   ];
 
   if (loading) {
-    return <GlobalLoader message="Loading your Cloudfire hiring dashboard..." />;
+    return (
+      <GlobalLoader message="Loading your Cloudfire hiring dashboard..." />
+    );
   }
 
   return (
     <div className="space-y-8">
-      <section className="relative overflow-hidden rounded-[40px] bg-gray-950 p-12 shadow-xl sm:p-16 lg:p-20 border border-white/5 my-6">
-        <div className="relative z-10 flex flex-col gap-10 lg:flex-row lg:items-center lg:justify-between">
+      <section className="Welcome relative overflow-hidden rounded-xl bg-white p-6 sm:p-8 border border-gray-100 shadow-sm my-6">
+        <div className="relative z-10 flex flex-col gap-8 lg:flex-row lg:items-center lg:justify-between">
           <div className="min-w-0 max-w-2xl">
-            <h1 className="text-3xl font-bold text-white sm:text-4xl lg:text-5xl leading-tight">
+            <h1 className="text-3xl font-bold text-gray-900 sm:text-4xl lg:text-5xl leading-tight">
               Welcome, <br />
-              <span className="text-blue-400">{firstName}</span>
+              <span className="text-blue-600">{firstName}</span>
             </h1>
-            <p className="mt-8 max-w-xl text-base leading-relaxed text-gray-400 sm:text-lg font-medium">
+            <p className="mt-4 max-w-xl text-base leading-relaxed text-gray-500 sm:text-lg font-medium">
               Live hiring data from your jobs, applications, interviews,
               messages, and the candidate pool.
             </p>
           </div>
-          <div className="flex flex-wrap gap-4">
+          <div className="flex flex-wrap gap-2 sm:gap-4">
             <Link
               to="/dashboard/jobs/post"
-              className="group relative flex items-center justify-center gap-2 overflow-hidden rounded-2xl bg-blue-700 px-8 py-4 text-sm font-bold text-white transition-all hover:scale-105 active:scale-95 shadow-xl shadow-blue-900/20"
+              className="group relative flex items-center justify-center gap-2 overflow-hidden rounded-xl bg-blue-700 px-6 py-3 text-sm font-bold text-white transition-all hover:scale-105 active:scale-95 shadow-md shadow-blue-900/20"
             >
-              <Briefcase size={20} />
+              <Briefcase size={18} />
               <span>Post Job</span>
             </Link>
             <Link
               to="/dashboard/jobseekers"
-              className="flex items-center justify-center gap-2 rounded-2xl bg-white/10 px-8 py-4 text-sm font-bold text-white backdrop-blur-md transition-all hover:bg-white/20 hover:scale-105 active:scale-95 border border-white/10"
+              className="flex items-center justify-center gap-2 rounded-xl border border-gray-200 bg-gray-50 px-6 py-3 text-sm font-bold text-gray-700 transition-all hover:bg-gray-100 hover:scale-105 active:scale-95"
             >
-              <Users size={20} />
+              <Users size={18} />
               <span>Browse Talent</span>
             </Link>
           </div>
         </div>
       </section>
 
-      <section className="grid grid-cols-1 gap-6 sm:grid-cols-2 xl:grid-cols-4">
+      <section className=" Welcome grid grid-cols-2 gap-2 sm:gap-4 xl:grid-cols-4">
         {metrics.map((metric) => {
           const Icon = metric.icon;
           return (
             <div
               key={metric.label}
-              className="rounded-2xl bg-white p-5 shadow-sm ring-1 ring-gray-100"
+              className="rounded-xl bg-white p-3 sm:p-5 shadow-sm ring-1 ring-gray-100"
             >
               <div className="flex items-start justify-between gap-4">
                 <div>
                   <p className="text-xs font-bold uppercase tracking-widest text-gray-400">
                     {metric.label}
                   </p>
-                  <p className={`mt-3 text-3xl font-bold ${metric.tone}`}>
+                  <p
+                    className={`mt-1 sm:mt-3 text-lg sm:text-3xl font-bold ${metric.tone}`}
+                  >
                     {metric.value}
                   </p>
                 </div>
-                <div className={`rounded-2xl p-3 ${metric.bg} ${metric.tone}`}>
+                <div className={`rounded-xl p-3 ${metric.bg} ${metric.tone}`}>
                   <Icon size={22} />
                 </div>
               </div>
@@ -186,8 +190,8 @@ const EmployerDashboard = () => {
         })}
       </section>
 
-      <section className="grid grid-cols-1 gap-6 xl:grid-cols-3">
-        <div className="rounded-2xl bg-white p-5 shadow-sm ring-1 ring-gray-100 xl:col-span-2">
+      <section className="grid grid-cols-1 gap-4 sm:gap-6 xl:grid-cols-3">
+        <div className="Welcome rounded-xl bg-white p-5 shadow-sm ring-1 ring-gray-100 xl:col-span-2">
           <h2 className="text-lg font-bold text-gray-950">Hiring Activity</h2>
           <p className="text-sm text-gray-500">
             Daily jobs posted and applications received.
@@ -238,7 +242,7 @@ const EmployerDashboard = () => {
           </div>
         </div>
 
-        <div className="rounded-2xl bg-white p-5 shadow-sm ring-1 ring-gray-100">
+        <div className="Welcome rounded-xl bg-white p-5 shadow-sm ring-1 ring-gray-100">
           <h2 className="text-lg font-bold text-gray-950">Candidate Status</h2>
           <p className="text-sm text-gray-500">
             Talent pool work status split.
@@ -278,8 +282,8 @@ const EmployerDashboard = () => {
         </div>
       </section>
 
-      <section className="grid grid-cols-1 gap-6 xl:grid-cols-3">
-        <div className="rounded-2xl bg-white p-5 shadow-sm ring-1 ring-gray-100 xl:col-span-2">
+      <section className="grid grid-cols-1 gap-4 sm:gap-6 xl:grid-cols-3">
+        <div className="Welcome rounded-xl bg-white p-5 shadow-sm ring-1 ring-gray-100 xl:col-span-2">
           <h2 className="text-lg font-bold text-gray-950">
             Top Candidate Skills
           </h2>
@@ -320,9 +324,9 @@ const EmployerDashboard = () => {
           </div>
         </div>
 
-        <div className="rounded-2xl bg-gray-950 p-5 text-white shadow-sm">
-          <h2 className="text-lg font-bold">Hiring Signals</h2>
-          <p className="text-sm text-gray-300">
+        <div className="Welcome rounded-xl bg-white p-5 shadow-sm ring-1 ring-gray-100">
+          <h2 className="text-lg font-bold text-gray-950">Hiring Signals</h2>
+          <p className="text-sm text-gray-500">
             Live account and workflow status.
           </p>
           <div className="mt-5 space-y-3">
@@ -350,7 +354,7 @@ const EmployerDashboard = () => {
         </div>
       </section>
 
-      <section className="grid grid-cols-1 gap-6 xl:grid-cols-3">
+      <section className="grid grid-cols-1 gap-4 sm:gap-6 xl:grid-cols-3">
         <ListPanel
           title="Recent Applications"
           empty="No applications on your jobs yet."
@@ -359,7 +363,7 @@ const EmployerDashboard = () => {
             <button
               key={item.id}
               onClick={() => item.candidate && setSelectedUser(item.candidate)}
-              className="w-full rounded-2xl border border-gray-100 p-4 text-left transition hover:border-blue-200 hover:bg-blue-50/30"
+              className="w-full rounded-xl border border-gray-100 p-4 text-left transition hover:border-blue-200 hover:bg-blue-50/30"
             >
               <div className="flex items-start justify-between gap-3">
                 <div className="min-w-0">
@@ -386,7 +390,7 @@ const EmployerDashboard = () => {
             <Link
               key={job.id}
               to="/dashboard/my-jobs"
-              className="block rounded-2xl border border-gray-100 p-4 transition hover:border-orange-200 hover:bg-orange-50/30"
+              className="block rounded-xl border border-gray-100 p-4 transition hover:border-orange-200 hover:bg-orange-50/30"
             >
               <div className="flex items-start justify-between gap-3">
                 <div className="min-w-0">
@@ -411,7 +415,7 @@ const EmployerDashboard = () => {
           ))}
         </ListPanel>
 
-        <div className="rounded-2xl bg-white p-5 shadow-sm ring-1 ring-gray-100">
+        <div className="Welcome rounded-xl bg-white p-5 shadow-sm ring-1 ring-gray-100">
           <h2 className="text-lg font-bold text-gray-950">
             Application Status
           </h2>
@@ -446,7 +450,7 @@ const EmployerDashboard = () => {
         </div>
       </section>
 
-      <section className="rounded-2xl bg-white p-5 shadow-sm ring-1 ring-gray-100">
+      <section className=" Welcome Welcome rounded-xl bg-white p-5 shadow-sm ring-1 ring-gray-100">
         <div className="mb-5 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
           <div>
             <h2 className="text-lg font-bold text-gray-950">Talent Pool</h2>
@@ -464,11 +468,11 @@ const EmployerDashboard = () => {
             />
           </div>
         </div>
-        <div className="grid grid-cols-1 gap-4 lg:grid-cols-2">
+        <div className="grid grid-cols-1 gap-2 sm:gap-4 sm:grid-cols-2 lg:grid-cols-2">
           {filteredSeekers.slice(0, 6).map((seeker) => (
             <article
               key={seeker.id || seeker.email}
-              className="rounded-2xl border border-gray-100 p-4"
+              className="rounded-xl border border-gray-100 p-4"
             >
               <div className="flex items-start gap-4">
                 <img
@@ -477,7 +481,7 @@ const EmployerDashboard = () => {
                     `https://api.dicebear.com/7.x/avataaars/svg?seed=${seeker.full_name}`
                   }
                   alt=""
-                  className="h-12 w-12 rounded-2xl bg-gray-100 object-cover"
+                  className="h-12 w-12 rounded-xl bg-gray-100 object-cover"
                 />
                 <div className="min-w-0 flex-1">
                   <p className="truncate font-bold text-gray-950">
@@ -536,17 +540,17 @@ const EmployerDashboard = () => {
 };
 
 const Signal = ({ icon: Icon, label, value }) => (
-  <div className="flex items-center gap-3 rounded-2xl bg-white/5 p-3">
-    <Icon size={18} className="text-blue-300" />
-    <span className="min-w-0 flex-1 text-sm font-semibold text-gray-200">
+  <div className="flex items-center gap-3 rounded-xl bg-gray-50 border border-gray-100 p-3">
+    <Icon size={18} className="text-blue-600" />
+    <span className="min-w-0 flex-1 text-sm font-semibold text-gray-700">
       {label}
     </span>
-    <span className="text-lg font-bold text-white">{value}</span>
+    <span className="text-lg font-bold text-gray-950">{value}</span>
   </div>
 );
 
 const EmptyBox = ({ text }) => (
-  <div className="flex h-full min-h-32 items-center justify-center rounded-2xl bg-gray-50 p-5 text-center text-sm text-gray-500">
+  <div className="flex h-full min-h-32 items-center justify-center rounded-xl bg-gray-50 p-5 text-center text-sm text-gray-500">
     {text}
   </div>
 );
@@ -554,7 +558,7 @@ const EmptyBox = ({ text }) => (
 const ListPanel = ({ title, empty, children }) => {
   const items = React.Children.toArray(children);
   return (
-    <div className="rounded-2xl bg-white p-5 shadow-sm ring-1 ring-gray-100">
+    <div className="Welcome rounded-xl bg-white p-5 shadow-sm ring-1 ring-gray-100">
       <h2 className="text-lg font-bold text-gray-950">{title}</h2>
       <div className="mt-4 space-y-3">
         {items.length > 0 ? items : <EmptyBox text={empty} />}

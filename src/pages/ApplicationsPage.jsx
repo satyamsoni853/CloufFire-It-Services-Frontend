@@ -65,7 +65,7 @@ const ApplicationsPage = () => {
       ) : (
         <div className="grid gap-6">
           {apps.map(app => (
-            <div key={app.id} className="bg-white rounded-[40px] border border-gray-100 p-8 flex flex-col md:flex-row md:items-center justify-between gap-6 shadow-sm hover:border-gray-200 transition-all">
+            <div key={app.id} className="bg-white rounded-xl border border-gray-100 p-8 flex flex-col md:flex-row md:items-center justify-between gap-6 shadow-sm hover:border-gray-200 transition-all">
               <div className="flex-1">
                 <div className="flex items-center gap-4 mb-3">
                   <h3 className="text-lg font-semibold text-gray-900">{app.job_title}</h3>

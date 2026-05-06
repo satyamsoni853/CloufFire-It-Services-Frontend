@@ -47,17 +47,17 @@ const InterviewsPage = () => {
           <p className="text-gray-500 font-medium text-sm">Manage and join your upcoming professional evaluations.</p>
         </div>
         <div className="flex gap-4">
-          <div className="px-6 py-2.5 bg-gray-50 text-gray-600 rounded-2xl text-[11px] font-semibold uppercase tracking-wider border border-gray-100">
+          <div className="px-6 py-2.5 bg-gray-50 text-gray-600 rounded-xl text-[11px] font-semibold uppercase tracking-wider border border-gray-100">
             Total: {interviews.length}
           </div>
-          <div className="px-6 py-2.5 bg-[#ff7301]/5 text-[#ff7301] rounded-2xl text-[11px] font-semibold uppercase tracking-wider border border-[#ff7301]/10">
+          <div className="px-6 py-2.5 bg-[#ff7301]/5 text-[#ff7301] rounded-xl text-[11px] font-semibold uppercase tracking-wider border border-[#ff7301]/10">
             Upcoming: {upcomingInterviews.length}
           </div>
         </div>
       </div>
 
       {/* Upcoming Section */}
-      <section>
+      <section className='Welcome' >
         <div className="flex items-center gap-4 mb-8">
           <div className="w-10 h-10 rounded-[14px] bg-gray-900 text-white flex items-center justify-center">
             <Clock size={18} />

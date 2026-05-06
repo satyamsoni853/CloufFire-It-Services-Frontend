@@ -27,7 +27,7 @@ const ReportsPage = () => {
       {/* Stats Grid */}
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 mb-10">
         {stats.map((stat, index) => (
-          <div key={index} className="bg-white p-6 rounded-2xl border border-gray-100 shadow-sm">
+          <div key={index} className="bg-white p-6 rounded-xl border border-gray-100 shadow-sm">
             <div className="flex justify-between items-start mb-4">
               <div className="w-12 h-12 bg-gray-50 rounded-xl flex items-center justify-center text-secondary">
                 <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -46,7 +46,7 @@ const ReportsPage = () => {
 
       {/* Main Sections */}
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-        <div className="lg:col-span-2 bg-white p-8 rounded-2xl border border-gray-100 shadow-sm min-h-[400px]">
+        <div className="lg:col-span-2 bg-white p-8 rounded-xl border border-gray-100 shadow-sm min-h-[400px]">
           <h3 className="font-bold text-xl mb-6">Application Trends</h3>
           <div className="w-full h-64 bg-gray-50 rounded-xl border-2 border-dashed border-gray-200 flex items-center justify-center">
              <span className="text-gray-400 font-medium">Visualization Chart Placeholder</span>
@@ -58,7 +58,7 @@ const ReportsPage = () => {
           </div>
         </div>
 
-        <div className="bg-white p-8 rounded-2xl border border-gray-100 shadow-sm">
+        <div className="bg-white p-8 rounded-xl border border-gray-100 shadow-sm">
           <h3 className="font-bold text-xl mb-6">Top Sources</h3>
           <div className="space-y-6">
             {[

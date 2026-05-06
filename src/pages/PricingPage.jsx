@@ -58,7 +58,7 @@ const PricingPage = () => {
               </div>
             )}
             
-            <div className="w-14 h-14 bg-gray-50 rounded-2xl flex items-center justify-center text-2xl mb-8 shadow-inner">
+            <div className="w-14 h-14 bg-gray-50 rounded-xl flex items-center justify-center text-2xl mb-8 shadow-inner">
               {plan.icon}
             </div>
 
@@ -81,7 +81,7 @@ const PricingPage = () => {
               ))}
             </div>
 
-            <button className={`w-full py-5 rounded-2xl font-bold text-sm transition-all active:scale-95 flex items-center justify-center gap-2 ${plan.buttonStyle}`}>
+            <button className={`w-full py-5 rounded-xl font-bold text-sm transition-all active:scale-95 flex items-center justify-center gap-2 ${plan.buttonStyle}`}>
               {plan.buttonText} {plan.price !== '0' && <ArrowRight size={16} />}
             </button>
           </motion.div>

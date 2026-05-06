@@ -197,71 +197,73 @@ const ProfilePage = () => {
   const completeness = calculateCompleteness();
 
   return (
-    <div className="max-w-[1000px] mx-auto space-y-12 pb-24 font-sans">
+    <div className=" mx-auto space-y-12 pb-24 font-sans">
       
       {/* --- HERO SECTION --- */}
       <motion.div 
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
-        className="bg-white rounded-[48px] border border-gray-100 shadow-sm overflow-hidden relative"
+        className="bg-white rounded-xl border border-gray-100 shadow-sm overflow-hidden relative"
       >
-        <div className="h-32 bg-gray-50 relative">
+        <div className="h-32 bg-gray-50 relative border-b border-gray-100">
           <div className="absolute top-6 right-8 text-gray-400 text-[10px] font-semibold uppercase tracking-widest">
             ID: {profile.id || '2024-USR'}
           </div>
         </div>
         
-        <div className="px-12 pb-12 -mt-12 flex flex-col md:flex-row gap-10 items-end md:items-center">
-          <div className="relative group shrink-0">
-            <div className="w-32 h-32 rounded-[40px] bg-white p-1.5 shadow-xl overflow-hidden border border-gray-100">
-              <img 
-                src={profile.profile_image_url || `https://api.dicebear.com/7.x/avataaars/svg?seed=${profile.full_name}`} 
-                alt="Profile" 
-                className="w-full h-full object-cover rounded-[36px] bg-gray-50" 
-              />
+        <div className="px-6 sm:px-10 pb-8 sm:pb-10">
+          <div className="flex flex-col md:flex-row gap-6 md:gap-8">
+            <div className="relative group shrink-0 -mt-16 mx-auto md:mx-0">
+              <div className="w-32 h-32 rounded-xl bg-white p-1.5 shadow-md overflow-hidden border border-gray-100">
+                <img 
+                  src={profile.profile_image_url || `https://api.dicebear.com/7.x/avataaars/svg?seed=${profile.full_name}`} 
+                  alt="Profile" 
+                  className="w-full h-full object-cover rounded-lg bg-gray-50" 
+                />
+              </div>
+              <label className="absolute inset-1.5 flex items-center justify-center bg-black/40 rounded-lg opacity-0 group-hover:opacity-100 transition-all cursor-pointer backdrop-blur-[2px]">
+                <input type="file" className="hidden" accept="image/*" onChange={(e) => handleFileUpload(e, 'image')} />
+                <div className="text-center">
+                  <svg className="w-6 h-6 text-white mx-auto mb-1" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M3 9a2 2 0 012-2h.93a2 2 0 001.664-.89l.812-1.22A2 2 0 0110.07 4h3.86a2 2 0 011.664.89l.812 1.22A2 2 0 0018.07 7H19a2 2 0 012 2v9a2 2 0 01-2 2H5a2 2 0 01-2-2V9z" /><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M15 13a3 3 0 11-6 0 3 3 0 016 0z" /></svg>
+                </div>
+              </label>
+              {uploading.type === 'image' && (
+                <div className="absolute inset-1.5 flex items-center justify-center bg-white/80 rounded-lg z-10">
+                  <div className="w-6 h-6 border-2 border-[#ff7301] border-t-transparent rounded-full animate-spin"></div>
+                </div>
+              )}
             </div>
-            <label className="absolute inset-1.5 flex items-center justify-center bg-black/40 rounded-[36px] opacity-0 group-hover:opacity-100 transition-all cursor-pointer backdrop-blur-[2px]">
-              <input type="file" className="hidden" accept="image/*" onChange={(e) => handleFileUpload(e, 'image')} />
-              <div className="text-center">
-                <svg className="w-6 h-6 text-white mx-auto mb-1" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M3 9a2 2 0 012-2h.93a2 2 0 001.664-.89l.812-1.22A2 2 0 0110.07 4h3.86a2 2 0 011.664.89l.812 1.22A2 2 0 0018.07 7H19a2 2 0 012 2v9a2 2 0 01-2 2H5a2 2 0 01-2-2V9z" /><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M15 13a3 3 0 11-6 0 3 3 0 016 0z" /></svg>
-              </div>
-            </label>
-            {uploading.type === 'image' && (
-              <div className="absolute inset-1.5 flex items-center justify-center bg-white/80 rounded-[36px] z-10">
-                <div className="w-6 h-6 border-2 border-[#ff7301] border-t-transparent rounded-full animate-spin"></div>
-              </div>
-            )}
-          </div>
 
-          <div className="flex-1 w-full text-center md:text-left">
-            <div className="flex flex-col md:flex-row md:items-center justify-between gap-6">
-              <div>
-                <div className="flex items-center justify-center md:justify-start gap-3 mb-2">
-                  <h1 className="text-2xl font-semibold text-gray-900 tracking-tight">{profile.full_name}</h1>
-                  <span className="w-5 h-5 bg-blue-500 rounded-full flex items-center justify-center text-white" title="Verified Profile">
-                    <CheckCircle2 size={12} strokeWidth={3} />
-                  </span>
+            <div className="flex-1 w-full text-center md:text-left pt-2 md:pt-4">
+              <div className="flex flex-col md:flex-row md:items-start justify-between gap-6">
+                <div>
+                  <div className="flex items-center justify-center md:justify-start gap-2 mb-1">
+                    <h1 className="text-2xl font-bold text-gray-900 tracking-tight">{profile.full_name}</h1>
+                    <span className="w-5 h-5 bg-blue-500 rounded-full flex items-center justify-center text-white" title="Verified Profile">
+                      <CheckCircle2 size={12} strokeWidth={3} />
+                    </span>
+                  </div>
+                  <p className="text-gray-500 font-medium text-sm mb-4">{profile.experience?.split('\n')[0] || 'Professional Talent'}</p>
+                  <div className="flex flex-wrap items-center justify-center md:justify-start gap-2 sm:gap-3">
+                    <HeroStat icon="📍" label={profile.location || 'Location'} onClick={() => scrollToSection('personal')} />
+                    <HeroStat icon="💼" label={profile.experience ? 'Experienced' : 'Fresher'} onClick={() => scrollToSection('employment')} />
+                    <HeroStat icon="💰" label={profile.salary || 'Salary'} onClick={() => scrollToSection('personal')} />
+                  </div>
                 </div>
-                <p className="text-gray-500 font-medium text-sm mb-6">{profile.experience?.split('\n')[0] || 'Professional Talent'}</p>
-                <div className="flex flex-wrap items-center justify-center md:justify-start gap-y-3 gap-x-6">
-                  <HeroStat icon="📍" label={profile.location || 'Location'} onClick={() => scrollToSection('personal')} />
-                  <HeroStat icon="💼" label={profile.experience ? 'Experienced' : 'Fresher'} onClick={() => scrollToSection('employment')} />
-                  <HeroStat icon="💰" label={profile.salary || 'Salary'} onClick={() => scrollToSection('personal')} />
-                </div>
-              </div>
-              
-              <div className="shrink-0 flex items-center gap-6 bg-gray-50/50 p-6 rounded-[32px] border border-gray-100">
-                <div className="text-right">
-                  <p className="text-[10px] font-semibold text-gray-400 uppercase tracking-widest mb-1">Strength</p>
-                  <p className="text-xl font-semibold text-gray-900">{completeness}%</p>
-                </div>
-                <div className="w-12 h-12 relative">
-                  <svg className="w-12 h-12 -rotate-90">
-                    <circle cx="24" cy="24" r="20" fill="none" stroke="#e5e7eb" strokeWidth="4" />
-                    <circle cx="24" cy="24" r="20" fill="none" stroke={completeness > 80 ? "#22c55e" : "#ff7301"} strokeWidth="4" strokeDasharray={125.6} strokeDashoffset={125.6 - (125.6 * completeness) / 100} strokeLinecap="round" className="transition-all duration-1000" />
-                  </svg>
-                  <div className="absolute inset-0 flex items-center justify-center">
-                    <Zap size={14} className={completeness > 80 ? 'text-green-500' : 'text-[#ff7301]'} fill="currentColor" />
+                
+                <div className="shrink-0 flex items-center gap-4 bg-gray-50/50 p-4 rounded-xl border border-gray-100">
+                  <div className="text-right">
+                    <p className="text-[10px] font-semibold text-gray-400 uppercase tracking-widest mb-0.5">Strength</p>
+                    <p className="text-lg font-bold text-gray-900">{completeness}%</p>
+                  </div>
+                  <div className="w-10 h-10 relative">
+                    <svg className="w-10 h-10 -rotate-90">
+                      <circle cx="20" cy="20" r="16" fill="none" stroke="#e5e7eb" strokeWidth="4" />
+                      <circle cx="20" cy="20" r="16" fill="none" stroke={completeness > 80 ? "#22c55e" : "#ff7301"} strokeWidth="4" strokeDasharray={100.5} strokeDashoffset={100.5 - (100.5 * completeness) / 100} strokeLinecap="round" className="transition-all duration-1000" />
+                    </svg>
+                    <div className="absolute inset-0 flex items-center justify-center">
+                      <Zap size={12} className={completeness > 80 ? 'text-green-500' : 'text-[#ff7301]'} fill="currentColor" />
+                    </div>
                   </div>
                 </div>
               </div>
@@ -294,10 +296,10 @@ const ProfilePage = () => {
           </div>
 
           <div className="bg-gray-50 rounded-[40px] p-8 border border-gray-100 text-center">
-            <div className="w-10 h-10 bg-white rounded-2xl flex items-center justify-center text-lg mx-auto mb-4 shadow-sm">✨</div>
+            <div className="w-10 h-10 bg-white rounded-xl flex items-center justify-center text-lg mx-auto mb-4 shadow-sm">✨</div>
             <h4 className="text-sm font-semibold mb-2">Visibility Tip</h4>
             <p className="text-gray-500 text-[11px] leading-relaxed mb-6">Profiles with a summary are 45% more likely to be viewed by top employers.</p>
-            <button onClick={() => scrollToSection('summary')} className="w-full bg-white border border-gray-100 text-gray-900 text-[10px] font-semibold uppercase tracking-widest py-3 rounded-2xl hover:bg-gray-900 hover:text-white transition-all">
+            <button onClick={() => scrollToSection('summary')} className="w-full bg-white border border-gray-100 text-gray-900 text-[10px] font-semibold uppercase tracking-widest py-3 rounded-xl hover:bg-gray-900 hover:text-white transition-all">
               Update Summary
             </button>
           </div>
@@ -308,7 +310,7 @@ const ProfilePage = () => {
           
           <SectionCard id="resume" title="Resume" icon="📄" ref={sectionRefs.resume} isEditable={false}>
             <div className="flex flex-col sm:flex-row items-center gap-8 p-10 bg-gray-50/30 rounded-[40px] border border-dashed border-gray-200 hover:border-[#ff7301] transition-colors group">
-              <div className="w-16 h-16 rounded-2xl bg-white shadow-sm flex items-center justify-center shrink-0 border border-gray-100">
+              <div className="w-16 h-16 rounded-xl bg-white shadow-sm flex items-center justify-center shrink-0 border border-gray-100">
                 <FileText className="w-8 h-8 text-gray-300" />
               </div>
               <div className="flex-1 text-center sm:text-left">
@@ -351,7 +353,7 @@ const ProfilePage = () => {
                       <button
                         key={status}
                         onClick={() => handleUpdateAvailability(status)}
-                        className={`px-6 py-2.5 rounded-2xl text-[11px] font-semibold transition-all border ${profile.availability === status ? 'border-[#ff7301] bg-[#ff7301]/5 text-[#ff7301]' : 'border-gray-100 text-gray-400 hover:border-gray-200'}`}
+                        className={`px-6 py-2.5 rounded-xl text-[11px] font-semibold transition-all border ${profile.availability === status ? 'border-[#ff7301] bg-[#ff7301]/5 text-[#ff7301]' : 'border-gray-100 text-gray-400 hover:border-gray-200'}`}
                       >
                         {status}
                       </button>
@@ -415,7 +417,7 @@ const ProfilePage = () => {
             {profile.skills ? (
               <div className="flex flex-wrap gap-2.5">
                 {profile.skills.split(',').map((skill, i) => (
-                  <span key={i} className="px-5 py-2.5 bg-gray-50 text-gray-600 rounded-2xl text-[11px] font-semibold uppercase tracking-wider border border-gray-100 transition-all hover:bg-white hover:border-[#ff7301] hover:text-[#ff7301] cursor-default">
+                  <span key={i} className="px-5 py-2.5 bg-gray-50 text-gray-600 rounded-xl text-[11px] font-semibold uppercase tracking-wider border border-gray-100 transition-all hover:bg-white hover:border-[#ff7301] hover:text-[#ff7301] cursor-default">
                     {skill.trim()}
                   </span>
                 ))}
@@ -533,7 +535,7 @@ const SectionCard = React.forwardRef(({ id, title, icon, children, onEdit, isEdi
         {onEdit && !isEditing && (
           <button 
             onClick={onEdit}
-            className="flex items-center gap-2 text-[#ff7301] text-[10px] font-semibold uppercase tracking-widest hover:bg-gray-50 px-5 py-2.5 rounded-2xl transition-all"
+            className="flex items-center gap-2 text-[#ff7301] text-[10px] font-semibold uppercase tracking-widest hover:bg-gray-50 px-5 py-2.5 rounded-xl transition-all"
           >
             <Edit3 size={14} />
             Update
@@ -558,7 +560,7 @@ const SectionCard = React.forwardRef(({ id, title, icon, children, onEdit, isEdi
                 <div className="space-y-2">
                   <label className="text-[10px] font-semibold text-gray-400 uppercase tracking-widest ml-1">Status</label>
                   <select 
-                    className="w-full bg-gray-50 border border-gray-100 focus:border-[#ff7301] rounded-2xl px-6 py-4 outline-none transition-all font-semibold text-sm"
+                    className="w-full bg-gray-50 border border-gray-100 focus:border-[#ff7301] rounded-xl px-6 py-4 outline-none transition-all font-semibold text-sm"
                     defaultValue={profile.work_status}
                     onChange={(e) => setLocalValue(prev => ({ ...prev, work_status: e.target.value }))}
                   >
@@ -600,7 +602,7 @@ const SectionCard = React.forwardRef(({ id, title, icon, children, onEdit, isEdi
 const HeroStat = ({ icon, label, onClick }) => (
   <div 
     onClick={onClick}
-    className={`flex items-center gap-2.5 bg-gray-50 px-4 py-2 rounded-2xl border border-gray-100 hover:border-orange-100 transition-all ${onClick ? 'cursor-pointer' : ''}`}
+    className={`flex items-center gap-2.5 bg-gray-50 px-4 py-2 rounded-xl border border-gray-100 hover:border-orange-100 transition-all ${onClick ? 'cursor-pointer' : ''}`}
   >
     <span className="text-base">{icon}</span>
     <span className="text-xs font-semibold text-gray-500">{label}</span>
@@ -624,7 +626,7 @@ const InputGroup = ({ label, ...props }) => (
   <div className="space-y-2">
     <label className="text-[10px] font-semibold text-gray-400 uppercase tracking-widest ml-1">{label}</label>
     <input 
-      className="w-full bg-gray-50 border border-gray-100 focus:border-[#ff7301] rounded-2xl px-6 py-4 outline-none transition-all font-semibold text-sm"
+      className="w-full bg-gray-50 border border-gray-100 focus:border-[#ff7301] rounded-xl px-6 py-4 outline-none transition-all font-semibold text-sm"
       {...props}
     />
   </div>

@@ -119,7 +119,7 @@ const JobSeekerDirectory = () => {
       </div>
 
       {/* Search Bar */}
-      <div className="bg-white rounded-2xl border border-gray-100 shadow-sm p-4 mb-6 flex flex-col sm:flex-row gap-3">
+      <div className="bg-white rounded-xl border border-gray-100 shadow-sm p-4 mb-6 flex flex-col sm:flex-row gap-3">
         <div className="relative flex-1">
           <Search className="w-5 h-5 absolute left-4 top-1/2 -translate-y-1/2 text-gray-400" />
           <input type="text" value={searchTerm} onChange={(e) => setSearchTerm(e.target.value)}
@@ -148,7 +148,7 @@ const JobSeekerDirectory = () => {
         {/* Sidebar Filters */}
         {showFilters && (
           <div className="lg:col-span-3">
-            <div className="bg-white rounded-2xl border border-gray-100 shadow-sm p-5 sticky top-8">
+            <div className=" Welcome bg-white rounded-xl border border-gray-100 shadow-sm p-5 sticky top-8">
               <div className="flex items-center justify-between mb-5">
                 <h3 className="text-sm font-bold text-gray-900 uppercase tracking-widest">All Filters</h3>
                 {activeFilterCount > 0 && <span className="text-[10px] font-bold bg-[#ff7301] text-white px-2 py-0.5 rounded-full">{activeFilterCount}</span>}
@@ -205,11 +205,11 @@ const JobSeekerDirectory = () => {
             <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6">
               {filteredSeekers.map((seeker) => (
                 <motion.div key={seeker.email} whileHover={{ y: -6 }}
-                  className="bg-white p-7 rounded-[28px] border border-gray-100 shadow-sm hover:shadow-2xl transition-all relative overflow-hidden group">
+                  className="bg-white p-7 rounded-xl border border-gray-100 shadow-sm hover:shadow-2xl transition-all relative overflow-hidden group">
                   <div className="absolute top-0 right-0 w-20 h-20 bg-orange-50 rounded-bl-[80px] -mr-6 -mt-6 transition-transform group-hover:scale-110"></div>
 
                   <div className="flex items-center gap-4 mb-5 relative cursor-pointer" onClick={() => setSelectedUser(seeker)}>
-                    <div className="w-14 h-14 rounded-2xl bg-white p-1 shadow-md border border-gray-50 overflow-hidden group-hover:ring-2 group-hover:ring-orange-300/50 transition-all">
+                    <div className="w-14 h-14 rounded-xl bg-white p-1 shadow-md border border-gray-50 overflow-hidden group-hover:ring-2 group-hover:ring-orange-300/50 transition-all">
                       <img src={seeker.profile_image_url || `https://api.dicebear.com/7.x/avataaars/svg?seed=${seeker.full_name}`} alt={seeker.full_name} className="w-full h-full object-cover" />
                     </div>
                     <div className="min-w-0">
@@ -232,11 +232,11 @@ const JobSeekerDirectory = () => {
                   <div className="space-y-3">
                     <div className="flex gap-2">
                       <a href={`tel:${seeker.mobile}`} 
-                        className="flex-1 bg-green-500 text-white py-3.5 rounded-2xl text-xs font-bold hover:bg-green-600 transition-all shadow-lg shadow-green-100 flex items-center justify-center gap-2">
+                        className="flex-1 bg-green-500 text-white py-3.5 rounded-xl text-xs font-bold hover:bg-green-600 transition-all shadow-lg shadow-green-100 flex items-center justify-center gap-2">
                         <Phone size={14}/> Call
                       </a>
                       <button onClick={() => handleContact(seeker)}
-                        className="flex-[1.2] bg-gradient-to-r from-[#ff7301] to-[#ff9845] text-white py-3.5 rounded-2xl text-xs font-bold hover:shadow-orange-200 hover:scale-[1.02] transition-all shadow-lg shadow-orange-100 flex items-center justify-center gap-2 cursor-pointer">
+                        className="flex-[1.2] bg-gradient-to-r from-[#ff7301] to-[#ff9845] text-white py-3.5 rounded-xl text-xs font-bold hover:shadow-orange-200 hover:scale-[1.02] transition-all shadow-lg shadow-orange-100 flex items-center justify-center gap-2 cursor-pointer">
                         <MessageSquare size={14}/> Message
                       </button>
                     </div>
@@ -269,7 +269,7 @@ const JobSeekerDirectory = () => {
       {/* Contact Modal */}
       {contactModal.open && (
         <div className="fixed inset-0 bg-black/50 z-[200] flex items-center justify-center p-4">
-          <div className="bg-white rounded-2xl w-full max-w-lg overflow-hidden shadow-2xl">
+          <div className="bg-white rounded-xl w-full max-w-lg overflow-hidden shadow-2xl">
             <div className="p-6 border-b border-gray-100 flex justify-between items-center bg-gray-50">
               <div>
                 <h2 className="text-xl font-bold text-gray-900">Contact {contactModal.seeker?.full_name}</h2>

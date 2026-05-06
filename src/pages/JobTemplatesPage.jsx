@@ -27,7 +27,7 @@ const JobTemplatesPage = () => {
           <h1 className="text-3xl font-bold text-gray-900 font-serif">Job Templates</h1>
           <p className="text-gray-500 font-medium">Save and reuse your most common job descriptions.</p>
         </div>
-        <button className="bg-black text-white px-8 py-4 rounded-2xl font-bold text-sm shadow-xl shadow-gray-100 hover:bg-gray-800 transition-all flex items-center gap-2 active:scale-95 cursor-pointer">
+        <button className="bg-black text-white px-8 py-4 rounded-xl font-bold text-sm shadow-xl shadow-gray-100 hover:bg-gray-800 transition-all flex items-center gap-2 active:scale-95 cursor-pointer">
           <Plus size={20} /> Create New Template
         </button>
       </div>
@@ -39,7 +39,7 @@ const JobTemplatesPage = () => {
           placeholder="Search templates..."
           value={search}
           onChange={(e) => setSearch(e.target.value)}
-          className="w-full pl-12 pr-6 py-4 bg-white border border-gray-100 rounded-2xl outline-none focus:border-[#ff7301] transition-all font-medium text-sm shadow-sm"
+          className="w-full pl-12 pr-6 py-4 bg-white border border-gray-100 rounded-xl outline-none focus:border-[#ff7301] transition-all font-medium text-sm shadow-sm"
         />
       </div>
 
@@ -52,7 +52,7 @@ const JobTemplatesPage = () => {
             className="bg-white p-8 rounded-[32px] border border-gray-100 shadow-sm hover:shadow-xl transition-all relative group flex flex-col"
           >
             <div className="flex justify-between items-start mb-6">
-              <div className="w-12 h-12 bg-orange-50 rounded-2xl flex items-center justify-center text-[#ff7301] shrink-0 border border-orange-100">
+              <div className="w-12 h-12 bg-orange-50 rounded-xl flex items-center justify-center text-[#ff7301] shrink-0 border border-orange-100">
                 <Layers size={20} />
               </div>
               <div className="flex gap-2 opacity-0 group-hover:opacity-100 transition-opacity">
